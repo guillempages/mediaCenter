@@ -1,9 +1,6 @@
-0.3:    Add autotools support
-        Update compatibility to lcdd 0.4
-        
-
-
 0.4:    Rewrote the core module (mediaCenter / mediaCenter_main) with a State Machine
 	Add Next/Prev handling to glmenu plugin
+        Disable legacy application by default
 
-
+0.3:    Add autotools support
+        Update compatibility to lcdd 0.4
