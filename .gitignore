@@ -8,7 +8,6 @@ include/defines.h
 include/stamp-h1
 libtool
 src/.deps/
-src/Makefile
 
 mediaCenter
 mediaCenter_glmenu
@@ -19,3 +18,4 @@ mediaCenter_old
 mediaCenter_xine
 mediaCenter_xmms
 
+mediaCenter-*.tar.bz2

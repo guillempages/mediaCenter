@@ -13,6 +13,7 @@ AC_CONFIG_SRCDIR([src/])
 #AC_CONFIG_HEADERS([include/defines.h])
 
 AC_ARG_ENABLE([debug],[AS_HELP_STRING([--enable-debug],[Enable verbose output])],[],[enable_debug=no])
+AC_ARG_ENABLE([legacy],[AS_HELP_STRING([--enable-legacy],[Compile old non state-machine version (obsolete)])],[],[enable_legacy=no])
 
 AC_ARG_WITH([xmms],[AS_HELP_STRING([--with-xmms],[Compile xmms plugin])],[],[with_xmms=check])
 AC_ARG_WITH([xine],[AS_HELP_STRING([--with-xine],[Compile xine plugin])],[],[with_xine=check])
@@ -121,6 +122,18 @@ AS_IF([test "x$with_mplayer" != xno],
      AC_SUBST([WITH_MPLAYER],[no])
    )
     
+OLD=
+AS_IF([test "x$enable_legacy" == xyes],
+     AC_SUBST([OLD],["mediaCenter_old${EXEEXT}"]),
+     AC_SUBST([OLD],[" "])
+   )
+
+ENABLE_LEGACY=
+AS_IF([test "x$enable_legacy" == xyes],
+     AC_SUBST([ENABLE_LEGACY],[yes]),
+     AC_SUBST([ENABLE_LEGACY],[no])
+   )
+ 
 
 LIRC=
 AS_IF([test "x$with_lirc" != xno],
@@ -170,6 +183,7 @@ AC_MSG_NOTICE([Compiling with mplayer: $WITH_MPLAYER])
 AC_MSG_NOTICE([Compiling with imon:    $WITH_IMON])
 AC_MSG_NOTICE([Compiling with lirc:    $WITH_LIRC])
 AC_MSG_NOTICE([Compiling with OpenGL:  $WITH_GLMENU])
+AC_MSG_NOTICE([Compiling Legacy:       $ENABLE_LEGACY])
 AC_MSG_NOTICE([])
 AC_MSG_NOTICE([-----------------------------------])
 
