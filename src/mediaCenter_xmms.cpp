@@ -3,7 +3,6 @@
 #include <iostream>
 #include <string>
 
-#include <stdlib.h>
 #include <xmms/xmmsctrl.h>
 
 #include "mediaCenter_xmms.h"
@@ -99,6 +98,15 @@ bool MediaCenter_xmms::isPaused() {
   bool result=true;
   if (xmms_remote_is_running(0)) {
     result=xmms_remote_is_paused(0);
+  }
+
+  return result;
+}
+
+bool MediaCenter_xmms::isShuffle() {
+  bool result=false;
+  if (xmms_remote_is_running(0)) {
+    result=xmms_remote_is_shuffle(0);
   }
 
   return result;

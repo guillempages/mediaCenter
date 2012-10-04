@@ -4,8 +4,6 @@
 #include <fstream>
 #include <string>
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/signal.h>
@@ -72,7 +70,7 @@ void usage(string progName) {
 
 //endless loop, that checks when lircd's pid changes
 // and kills the lirc plugin process when that happens
-// The server should restart the lirc plugin, so rebind to lirc
+// The server should restart the lirc plugin, to rebind to lirc
 void start_watch_lircd_pid() {
   int myPID=fork();
 

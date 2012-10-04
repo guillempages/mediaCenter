@@ -4,8 +4,6 @@
 #include <iostream>
 #include <iomanip>
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 #include <sys/types.h>
@@ -16,7 +14,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include <string.h> //for memcpy
 
 #include <lcd>
 
@@ -51,7 +48,7 @@ void usage(string progName) {
        << "  " << progName << " [-s server] [-p port]" << endl;
 }
 
-int ask(int sock, const sockaddr_in& to, const std::string& text, int &result) {
+int ask(int sock, const sockaddr_in* to, const std::string& text, int &result) {
   int error=0;
   char buffer[512];
 
@@ -78,7 +75,7 @@ int ask(int sock, const sockaddr_in& to, const std::string& text, int &result) {
   return error;
 }
 
-int ask(int sock, struct sockaddr_in& to, const std::string& text, std::string &result) {
+int ask(int sock, struct sockaddr_in* to, const std::string& text, std::string &result) {
   int error=0;
   char buffer[512];
 
@@ -215,9 +212,9 @@ int main(int argc, char * argv[]) {
   int countFailures=0;
 
   while (!end) {
-    error=ask(sock,remote,"Get Type",type);
+    error=ask(sock,&remote,"Get Type",type);
     if (error <= 0) {
-      if ( countFailures < 100 ) {
+      if ( countFailures < 50 ) {
         lcd->clear();
         countFailures++;
       }
@@ -228,7 +225,7 @@ int main(int argc, char * argv[]) {
       string artist,title,oldTitle,channel,oldChannel;
       stringstream sstream;
       int currTime,totalTime,track,totalTracks,chapter,totalChapters;
-      int paused;
+      int paused,shuffle;
       title="<No Title>";
       channel="<No Channel>";
       currTime=totalTime=track=totalTracks=chapter=totalChapters=0;
@@ -242,16 +239,16 @@ int main(int argc, char * argv[]) {
           title=type;
           //just print track, chapter and time.
           //no title available
-          if (ask(sock,remote,"Get Track",track)<=0)
+          if (ask(sock,&remote,"Get Track",track)<=0)
             break;
-          if (ask(sock,remote,"Get Chapter",chapter)<=0)
+          if (ask(sock,&remote,"Get Chapter",chapter)<=0)
             break;
-          if (ask(sock,remote,"Get Time",currTime)<=0)
+          if (ask(sock,&remote,"Get Time",currTime)<=0)
             break;
-          if (ask(sock,remote,"Get TotalTime",totalTime)<=0)
+          if (ask(sock,&remote,"Get TotalTime",totalTime)<=0)
             break;
           sstream << setfill(' ') << setw(3) << track << " " << setw(3) << setfill(' ') << chapter;
-          if (ask(sock,remote,"Get Paused",paused)<=0)
+          if (ask(sock,&remote,"Get Paused",paused)<=0)
             break;
           sstream << formatTime(currTime,totalTime,paused);
           if (oldTitle!=title) {
@@ -263,9 +260,9 @@ int main(int argc, char * argv[]) {
         } else if (type == "TV") {
           //print channel name 
           //maybe I'll add EPG sometime
-          if (ask(sock,remote,"Get Channel",channel)<=0) 
+          if (ask(sock,&remote,"Get Channel",channel)<=0) 
             break;
-          if (ask(sock,remote,"Get Title",title)<=0) 
+          if (ask(sock,&remote,"Get Title",title)<=0) 
             break;
           if (oldChannel!=channel) {
             DBG(cout << "Channel: " << channel << endl;)
@@ -277,41 +274,89 @@ int main(int argc, char * argv[]) {
           }
 
         } else if ((type == "music") || (type == "CD")) {
-          if (ask(sock,remote,"Get Artist",artist)<0)
+          if (ask(sock,&remote,"Get Artist",artist)<0)
             break;
-          if (ask(sock,remote,"Get Title",title)<=0)
+          if (ask(sock,&remote,"Get Title",title)<=0)
             break;
-          if (ask(sock,remote,"Get Track",track)<=0)
+          if (ask(sock,&remote,"Get Track",track)<=0)
             break;
-          if (ask(sock,remote,"Get TotalTracks",totalTracks)<=0)
+          if (ask(sock,&remote,"Get TotalTracks",totalTracks)<=0)
             break;
-          if (ask(sock,remote,"Get Time",currTime)<=0)
+          if (ask(sock,&remote,"Get Time",currTime)<=0)
             break;
-          if (ask(sock,remote,"Get TotalTime",totalTime)<=0)
+          if (ask(sock,&remote,"Get TotalTime",totalTime)<=0)
+            break;
+          if (ask(sock,&remote,"Get Shuffle",shuffle)<=0)
             break;
 
           if (artist != "") {
             title=artist + " - " + title;
           }
 
-          int digits;
+          int digits,totalDigits;
           if (totalTracks<1000) {
-            digits=3; 
+            totalDigits=3; 
+            digits=3;
           } else if (totalTracks < 10000) { 
-            digits=4;
+            if (track < 100) {
+              digits = 2;
+              totalDigits = 4;
+            } else if (track <1000) {
+              digits = 3;
+              totalDigits = 3;
+            } else {
+              digits = 4;
+              totalDigits = 2;
+            }
           } else {
-            digits=5;
+            if (track < 10) {
+              digits = 1;
+              totalDigits = 5;
+            } else if (track < 100) {
+              digits = 2;
+              totalDigits = 4;
+            } else if (track < 1000) {
+              digits = 3;
+              totalDigits = 3;
+            } else if (track < 10000) {
+              digits = 4;
+              totalDigits = 2;
+            } else {
+              digits = 5;
+              totalDigits = 1;
+            }
           }
 
-          sstream << setfill(' ') << setw(digits) << track << "/" << setw(6-digits) << setfill('0');
-          if (totalTracks<1000) {
+          sstream << setfill(' ') << setw(digits) << track << "/" << setw(totalDigits) << setfill('0');
+
+          if ( totalDigits == 5) {
             sstream << totalTracks;
-          } else if (totalTracks < 10000) {
-            sstream << "++";
-          } else {
-            sstream << "+";
+          } else if ( totalDigits == 4) {
+            if (totalTracks < 10000) {
+              sstream << totalTracks;
+            } else { 
+              sstream << "++++";
+            }
+          } else if (totalDigits == 3 ){
+            if (totalTracks < 1000) {
+              sstream << totalTracks;
+            } else { 
+              sstream << "+++";
+            }
+          } else if (totalDigits == 2 ){
+            if (totalTracks < 100) {
+              sstream << totalTracks;
+            } else { 
+              sstream << "++";
+            }
+          } else if (totalDigits == 1 ){
+            if (totalTracks < 10) {
+              sstream << totalTracks;
+            } else { 
+              sstream << "+";
+            }
           }
-          if (ask(sock,remote,"Get Paused",paused)<=0)
+          if (ask(sock,&remote,"Get Paused",paused)<=0)
             break;
           sstream << formatTime(currTime,totalTime,paused);
           if (oldTitle!=title) {
@@ -320,15 +365,15 @@ int main(int argc, char * argv[]) {
           }
           lcd->sendLine(sstream.str(),2);
         } else if (type == "movie") {
-          if (ask(sock,remote,"Get Title",title)<=0)
+          if (ask(sock,&remote,"Get Title",title)<=0)
             break;
-          if (ask(sock,remote,"Get Time",currTime)<=0)
+          if (ask(sock,&remote,"Get Time",currTime)<=0)
             break;
-          if (ask(sock,remote,"Get TotalTime",totalTime)<=0)
+          if (ask(sock,&remote,"Get TotalTime",totalTime)<=0)
             break;
 
           sstream << "       " ;
-          if (ask(sock,remote,"Get Paused",paused)<=0)
+          if (ask(sock,&remote,"Get Paused",paused)<=0)
             break;
           sstream << formatTime(currTime,totalTime,paused);
 DBG(cout << "Time: " << currTime << "/" << totalTime << endl);

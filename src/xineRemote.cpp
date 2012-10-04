@@ -3,7 +3,6 @@
 #include <string>
 #include <iostream>
 
-#include <stdio.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -74,6 +73,8 @@ int XineRemote::initSocket(const string& _address, int port) {
     close(socket_);
     socket_=-1;
     return socket_;
+  } else {
+    DBG("XineRemote ready to work");
   }
 }
 

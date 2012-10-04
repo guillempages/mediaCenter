@@ -1,10 +1,8 @@
 #include "defines.h"
-#include "basePlugin.h"
 
 #include <sys/types.h>
 #include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <signal.h>
 
 #include <string>
 #include <iostream>
@@ -12,6 +10,10 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+
+#define DEBUG
+#include "utils.h"
+#include "basePlugin.h"
 
 using std::string;
 
@@ -25,6 +27,7 @@ int Plugin::exec(const std::string & prog, const char ** argv) {
   if (PID_==0) { //child
     execvp(prog.c_str(),const_cast<char**>(argv));
     perror("Plugin child");
+    std::cerr << "BasePlugin::exec( " << prog << ", ...)" << std::endl;
     exit(-1);
   }
 
@@ -32,7 +35,7 @@ int Plugin::exec(const std::string & prog, const char ** argv) {
 }
 
 bool Plugin::stop() {
-  DBG(std::cout << "Stopping Application" << std::endl;)
+  DBG(std::cout << "Stopping Application (PID: " << PID_ << ")" << std::endl;)
   if (PID_>0) {
     kill(PID_,SIGTERM);
   }

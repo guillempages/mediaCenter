@@ -5,8 +5,6 @@
 #include <sstream>
 #include <set>
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <sys/time.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -188,9 +186,11 @@ void newConnection() {
              result = intToString(app->getTotalChapters());
            } else if (parameter=="Paused") {
              result = intToString(app->isPaused());
+           } else if (parameter=="Shuffle") {
+             result = intToString(app->isShuffle());
            }
            DBG(cout << result << endl;)
-           sendto(sock,remote,result);
+           sendto(sock,&remote,result);
          } else if (command=="Play") {
            app->play();
          } else if (command=="Pause") {
@@ -199,7 +199,7 @@ void newConnection() {
            app->stop();
          } else if (command=="Next") {
            app->next();
-         } else if (command=="Previous") {
+         } else if (command=="Prev") {
            app->previous();
          } else if (command=="Quit") {
            end=true;

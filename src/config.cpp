@@ -7,9 +7,12 @@
 
 #include "config.h"
 
+#include "utils.h"
+
 using std::string;
 using std::ifstream;
 using std::cout;
+using std::cerr;
 using std::endl;
 
 using namespace Config;
@@ -72,7 +75,9 @@ namespace Config {
 }; //namespace Config
 
 std::ostream & operator<<(std::ostream & ostr, const Config::PluginConf& plugin) {
-  ostr << "Type: " << plugin.type << endl
+  ostr << "------------------------------------------------" << endl
+       << "Class: " << plugin.class_ << endl
+       << "Type: " << plugin.type << endl
        << "Path: " << plugin.path << endl
        << "Config File: " << plugin.configFile << endl
        << "Port: " << plugin.port << endl; 
@@ -113,14 +118,26 @@ std::ostream & operator<<(std::ostream & ostr, const Config::RecordPluginConf& p
 }
 
 std::ostream & operator<<(std::ostream & ostr, const Config::Plugins& plugins) {
-  ostr << plugins.remote << plugins.display << plugins.tv << plugins.dvb << plugins.dvd << plugins.cd << plugins.music << plugins.movie << plugins.movieMenu << plugins.record;
+ostr << "Config path: " << plugins.path << endl << plugins.remote << plugins.display << plugins.tv << plugins.dvb << plugins.dvd << plugins.cd << plugins.music << plugins.movie << plugins.movieMenu << plugins.record;
   return ostr;
 }
 
 
-Plugins & getPlugins() {
-  path=getenv("HOME");
-  path+="/.mediaCenter";
+Plugins & getPlugins(const std::string & _path) {
+  string path;
+
+  // parameter has precedence
+  if (_path != "") {
+    path=_path;
+  // otherwise, stored path has preference
+  } else if (plugins.path != "") {
+    path=plugins.path;
+  // else use default
+  } else {
+    path=getenv("HOME");
+    path+="/.mediaCenter";
+  }
+
   ifstream file((path+"/plugins").c_str());
 
 	string name;
@@ -131,49 +148,58 @@ Plugins & getPlugins() {
 
   Config::PluginConf * currentPlugin=&dummyPlugin;
 
+  if (file.fail()) {
+    cerr << "Could not open config file " << path << "/plugins" <<  endl;
+  }
+
 	while (file.good()) {
 	  file >> name;
+	  trim(name);
+	  toLower(name);
+
+    // Ignore coment lines (read whole line)
 	  if (!name.empty() && name[0]=='#') {
 	    file.get(pCharTmp,256,'\n');
 	    continue;
 	  }
-    if (name=="[remote]") {
+
+    if (name==trim(toLower("[remote]"))) {
        currentPlugin=&plugins.remote;
-	  } else if (name=="[display]") {
+	  } else if (name==trim(toLower("[display]"))) {
        currentPlugin=&plugins.display;
-	  } else if (name=="[DVD]") {
+	  } else if (name==trim(toLower("[DVD]"))) {
        currentPlugin=&plugins.dvd;
-	  } else if (name=="[CD]") {
+	  } else if (name==trim(toLower("[CD]"))) {
        currentPlugin=&plugins.cd;
-	  } else if (name=="[TV]") {
+	  } else if (name==trim(toLower("[TV]"))) {
        currentPlugin=&plugins.tv;
-	  } else if (name=="[DVB]") {
+	  } else if (name==trim(toLower("[DVB]"))) {
        currentPlugin=&plugins.dvb;
-	  } else if (name=="[Music]") {
+	  } else if (name==trim(toLower("[Music]"))) {
        currentPlugin=&plugins.music;
-	  } else if (name=="[Movie]") {
+	  } else if (name==trim(toLower("[Movie]"))) {
        currentPlugin=&plugins.movie;
-	  } else if (name=="[MovieMenu]") {
+	  } else if (name==trim(toLower("[MovieMenu]"))) {
        currentPlugin=&plugins.movieMenu;
-	  } else if (name=="[Record]") {
+	  } else if (name==trim(toLower("[Record]"))) {
        currentPlugin=&plugins.record;
 	  } else if (name[0]=='[') {
        currentPlugin=&dummyPlugin;
-	  } else if (name=="path") {
+	  } else if (name==trim(toLower("path"))) {
 	    file >> strtmp;
 	    file >> currentPlugin->path;
-	  } else if (name=="config") {
+	  } else if (name==trim(toLower("config"))) {
 	    file >> strtmp;
 	    file >> currentPlugin->configFile;
-	  } else if (name=="port") {
+	  } else if (name==trim(toLower("port"))) {
 	    file >> strtmp;
 	    file >> currentPlugin->port;
-	  } else if (name=="remotePort") {
+	  } else if (name==trim(toLower("remotePort"))) {
 	    file >> strtmp;
       if (currentPlugin->class_=="Menu") {
   	    file >> ((Config::MenuPluginConf*)currentPlugin)->remotePort;
       }
-	  } else if (name=="file") {
+	  } else if (name==trim(toLower("file"))) {
 	    file >> strtmp;
       if (currentPlugin->class_=="Output") {
   	    file >> ((Config::OutputPluginConf*)currentPlugin)->file;
@@ -184,7 +210,7 @@ Plugins & getPlugins() {
       } else {
         file >> strtmp;
       }
-	  } else if (name=="server") {
+	  } else if (name==trim(toLower("server"))) {
 	    file >> strtmp;
       if (currentPlugin->class_=="Remote") {
 	      file >> ((Config::RemotePluginConf*)currentPlugin)->server;
@@ -195,14 +221,14 @@ Plugins & getPlugins() {
       } else {
         file >> strtmp;
       }
-	  } else if (name=="name") {
+	  } else if (name==trim(toLower("name"))) {
 	    file >> strtmp;
       if (currentPlugin->class_=="Remote") {
   	    file >> ((Config::RemotePluginConf*)currentPlugin)->name;
       } else {
         file >> strtmp;
       }
-    } else if (name=="format") {
+    } else if (name==trim(toLower("format"))) {
       file >> strtmp;
       if (currentPlugin->class_=="format") {
         file >> ((Config::RecordPluginConf*)currentPlugin)->format;
@@ -218,8 +244,13 @@ Plugins & getPlugins() {
 
 }
 
-void configInit()
+void configInit(const std::string & path)
 {
+  if (path!="") {
+    plugins.path=path;
+  } else {
+    plugins.path="";
+  }
   plugins.remote.path="mediaCenter_lirc";
   plugins.remote.name="mediaCenter";
   plugins.remote.server="localhost";
@@ -243,12 +274,12 @@ void configInit()
   plugins.movie.path="mediaCenter_xine";
 
   plugins.movieMenu.type="Movie";
-  plugins.movieMenu.path="/movies";
+  plugins.movieMenu.path="mediaCenter_glmenu";
 
   plugins.record.type="Record";
   plugins.record.path="mediaCenter_record";
 
-  getPlugins();
+  getPlugins(path);
 
   DBG(cout << "Plugins: " << endl << plugins << endl);
 }

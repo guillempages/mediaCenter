@@ -39,6 +39,7 @@ public:
   virtual void previous() {};
 
   virtual bool isPaused();
+  virtual bool isShuffle() {return false;};
 
   virtual void exit();
   /**

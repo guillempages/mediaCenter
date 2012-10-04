@@ -2,13 +2,10 @@
 
 #include <GL/glut.h>
 #include <iostream>
+#include <sstream>
 #include <vector>
-#include <algorithm>
 #include <string>
-#include <string.h>
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/signal.h>
@@ -22,7 +19,6 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-
 #include "utils.h"
 
 using std::cout;
@@ -31,6 +27,7 @@ using std::endl;
 using std::flush;
 using std::vector;
 using std::string;
+using std::stringstream;
 
 void * font;
 
@@ -83,17 +80,21 @@ void showMenu(vector<string> menu, int pos=-1) {
 
   inc=0.1;
 
-  pos0=0.9;
+  pos0=1;
   
   start=pos-9+menu.size();
 
   if (menu.size()<19) {
     for (i=0; i<menu.size(); i++) {
-      if (i!=pos%menu.size())
+      if (i!=pos%menu.size()) {
         glColor3f(0.6,0.9,0.7);
-      else
-        glColor3f(0.9,0.3,0.3);
-      writeText(-0.1,pos0-(i)*inc,menu[i].c_str());
+        font=GLUT_BITMAP_HELVETICA_18;
+      } else {
+        glColor3f(0.9,0.15,0.2);
+        font=GLUT_BITMAP_TIMES_ROMAN_24;
+      }
+//      writeText(-0.1,pos0-(i)*inc,menu[i].c_str());
+      writeText(-0.06 - 0.0013*getTextWidth(menu[i%menu.size()].c_str()),pos0-(i-start)*inc,menu[i%menu.size()].c_str());
     }
     
   } else {
@@ -124,6 +125,29 @@ void displayFunction(void) {
   glutSwapBuffers();
 }
 
+void sendList(const struct sockaddr_in * to) {
+  int total=menu.size();
+
+  stringstream sstream;
+  sstream.str("");
+  sstream << "Total: " << total;
+
+// send total
+  sendto(sock,to,sstream.str());
+  DBG(cout << sstream.str() << endl);
+  
+//send the current position first...
+  for (int i=pos; i<total; i++) {
+    sendto(sock,to,menu[i]);
+    DBG(cout << menu[i] << endl);
+  }
+//and loop over
+  for (int i=0; i<pos; i++) {
+    sendto(sock,to,menu[i]);
+    DBG(cout << menu[i] << endl);
+  }
+}
+
 void
 my_reshape(int w, int h)
 {
@@ -141,11 +165,17 @@ my_handle_key(unsigned char key, int x, int y)
       exit(0);
       break;
 
-   case 'u': //Up
+   case '<': // Up
       pos=(pos+menu.size()-1)%(menu.size()*2);
       break;
-   case 'd': //Down
+   case '>': // Down
       pos=(pos+1)%(menu.size()*2);
+      break;
+   case '-': // Prev 
+      pos=(pos+10*menu.size()-10)%(menu.size()*2);
+      break;
+   case '+': // Next
+      pos=(pos+10)%(menu.size()*2);
       break;
    case '\r':
    case '\n': {//Enter
@@ -167,6 +197,8 @@ void
 my_idle()
 {
   fd_set fdSock;
+  struct sockaddr_in from;
+  int from_len;
   struct timeval timeout;
   int error;
 
@@ -181,20 +213,28 @@ my_idle()
   if (error>0) {
     char buf[513];
 
-    if (error=recv(sock,buf,512,0)) {
+    if (error=myRecv(sock,buf,512,1,&from)) {
        buf[error]=0;
        if ((buf[error-1]=='\n') || (buf[error-1]=='\r'))
          buf[error-1]=0;
        if ((error>1) && ((buf[error-2]=='\r') || (buf[error-2]=='\n'))) 
          buf[error-2]=0;
-       if (!strcmp(buf,"Up")) {
-         my_handle_key('u',0,0);
-       } else if (!strcmp(buf,"Down")) {
-         my_handle_key('d',0,0);
-       } else if (!strcmp(buf,"Enter")) {
+       toLower(trim(buf));
+       if (!strcmp(buf,"up")) {
+         my_handle_key('<',0,0);
+       } else if (!strcmp(buf,"down") ) {
+         my_handle_key('>',0,0);
+       } else if (!strcmp(buf,"next") ) {
+         my_handle_key('+',0,0);
+       } else if (!strcmp(buf,"prev") ) {
+         my_handle_key('-',0,0);
+       } else if (!strcmp(buf,"list")) {
+         DBG(cout << "Sending list" << endl);
+         sendList(&from);
+       } else if (!strcmp(buf,"enter")) {
          my_handle_key('\n',0,0);
        } else {
-         DBG(cout << "mediaCenter_menu received " << buf << endl);
+//         DBG(cout << "mediaCenter_menu received " << buf << endl);
        }
     }
   } else if (error==0) {
@@ -228,7 +268,7 @@ vector<string> listDirectory(const string& directory) {
     pos=file.rfind(".");
     if (pos >= 0) {	  
       ext=file.substr(pos+1);
-      std::transform(ext.begin(),ext.end(),ext.begin(),tolower);
+      transform(ext.begin(),ext.end(),ext.begin(),tolower);
     } else {
       ext="";
     }
@@ -237,6 +277,7 @@ vector<string> listDirectory(const string& directory) {
     if ( (ext == "mpg") ||
          (ext == "mpeg") || 
          (ext == "avi") || 
+         (ext == "mov") || 
          (ext == "wmv") || 
          (ext == "divx") ) {
 
@@ -250,7 +291,7 @@ vector<string> listDirectory(const string& directory) {
 
     entry=readdir(films);
   }
-  std::sort(menuFiles.begin(),menuFiles.end());
+  sort(menuFiles.begin(),menuFiles.end());
   sort(result.begin(),result.end());
 
 }
@@ -300,17 +341,24 @@ int main(int argc, char * argv[]) {
   signal(SIGINT, term);
   signal(SIGTERM, term);
 
-  //remove leading path from program name.
-  string programName=argv[0];
   int port=10011;
   int remotePort=10010;
   string server="127.0.0.1";
   string mediaType="";
   
+  //remove leading path from program name.
+  string programName=argv[0];
   int pos=programName.rfind("/");
   if (pos!=string::npos) {
     programName=programName.substr(pos+1);
   }
+
+DBG(
+  for (int i=0; i<argc; i++) {
+    cout << argv[i] << " ";
+  }
+  cout << endl;
+);
 
   const char * basename=programName.c_str();
 
@@ -359,7 +407,7 @@ int main(int argc, char * argv[]) {
   local.sin_addr.s_addr=INADDR_ANY;
 
   if (bind(sock,(struct sockaddr*)&local,sizeof(local)) < 0) {
-    perror((programName+".bind").c_str());
+    perror((programName+".bind local").c_str());
     term(-2);
   } 
 

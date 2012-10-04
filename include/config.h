@@ -3,7 +3,6 @@
 
 #include <string>
 #include <iostream>
-#include "utils.h"
 
 namespace Config {
 
@@ -64,7 +63,8 @@ class Plugins {
   MenuPluginConf movieMenu;
   OutputPluginConf music;
   RecordPluginConf record; 
- 
+  
+  std::string path; 
 };
 
 
@@ -74,8 +74,8 @@ extern Plugins plugins;
 std::ostream & operator<<(std::ostream& ostr, const Config::PluginConf & plugin);
 std::ostream & operator<<(std::ostream& ostr, const Config::Plugins & plugins);
 
-Config::Plugins & getPlugins();
+Config::Plugins & getPlugins(const std::string & path = "");
 
-void configInit();
+void configInit(const std::string & path="");
 
 #endif

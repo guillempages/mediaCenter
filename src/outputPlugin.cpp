@@ -1,10 +1,11 @@
 #include "defines.h"
-#include "config.h"
-#include "outputPlugin.h"
 
 #include <string>
 #include <iostream>
-#include <stdio.h>
+
+#include "config.h"
+#include "utils.h"
+#include "outputPlugin.h"
 
 using Config::plugins;
 using std::string;
@@ -17,6 +18,7 @@ OutputPlugin::~OutputPlugin() {
 }
 
 bool OutputPlugin::start(const Config::OutputPluginConf & plugin) {
+  DBG(std::cout << "Starting OutputPlugin" << std::endl);
   if (PID_)
     stop();
 
@@ -60,5 +62,6 @@ bool OutputPlugin::start(const Config::OutputPluginConf & plugin) {
 }
 
 bool OutputPlugin::stop() {
+  DBG(std::cout << "Stopping OutputPlugin" << std::endl);
   send("Quit");
 }

@@ -1,0 +1,26 @@
+display plugin does not always die as expected
+  -music -> movie (dies) -> idle (does't die)
+
+xine does not (always) die with its parent process
+
+switch on TV and DVB
+  -Create the required HSM states
+
+If the menu (e.g. movie) has just one entry, automatically play it
+
+Mount data CD and show menu if not a DVD
+  -For the DVD state
+  -use "mount -v" on the device to get the mount point and unmount afterwards
+
+Add check for Shuffle to the output plugins and the query from the displayPlugin
+  -Maybe show the list in format "xxxx*xxxx" instead of "xxxx/xxxx"
+
+Add support for "Nokia style keypad" in the menu
+  -typing the first letter(s) of a movie should automatically go there
+
+Add menu support for other media types
+  -not only movies. E.g. playlists in music
+
+If a movie is split into two files, plaz both sequentially
+	-E.g.  movie (CD1).avi       movie (CD2).avi     
+	       movie2 (Part 1).mpg   movie2 (Part 2).mpg

@@ -1,10 +1,12 @@
 #include "defines.h"
-#include "config.h"
-#include "menuPlugin.h"
 
 #include <string>
 #include <iostream>
-#include <stdio.h>
+
+#include "config.h"
+
+#include "utils.h"
+#include "menuPlugin.h"
 
 using Config::plugins;
 using std::string;

@@ -2,8 +2,6 @@
 #define BASE_PLUGIN_H
 
 #include <string>
-#include <sys/types.h>
-#include <signal.h>
 
 #include "config.h"
 

@@ -7,7 +7,6 @@
 #include <vector>
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <fcntl.h>
 
 #include <sys/time.h>
@@ -36,7 +35,7 @@ using std::string;
 OutputPlugin oplug;
 MenuPlugin menuPlugin;
 
-bool end;
+static bool end;
 
 #ifdef DEBUG
 #define DBG(x) x
@@ -80,15 +79,50 @@ inline void stopOutput() {
 
 int main(int argc, char * argv[]) {
 
-  if (argc > 1) {
-    if ( string(argv[1]) == "-v") {
-      cout << PACKAGE_NAME << " version " << VERSION << endl;
-      cout << "Copyright (c) Guillem Pages Gassull 2008." << endl;
-      exit(0);
+	int sock;
+	fd_set sockSelect;
+  int port=10010;
+  struct sockaddr_in local,remote;
+  socklen_t remoteSize=sizeof(remote);
+  string configPath="";
+
+  //remove leading path from program name.
+  string programName=argv[0];
+  int pos=programName.rfind("/");
+  if (pos!=string::npos) {
+    programName=programName.substr(pos+1);
+  }
+
+  const char * basename=programName.c_str();
+
+  int optc=0;
+  while ((optc=getopt(argc,argv,"vp:c:")) != -1 ) {
+    switch (optc) {
+      case 'v': { // version
+        cout << PACKAGE_NAME << " version " << VERSION << endl;
+        cout << "Copyright (c) Guillem Pages Gassull 2009." << endl;
+        exit(0);
+        break;
+      }
+      case 'p': { //port 
+        port=atoi(optarg);
+        cout << "Using non default port " << port << endl;
+        break;
+      }
+      case 'c': { // config file
+        configPath=optarg;
+        cout << "Reading configuration from " << configPath << endl;
+        break;
+      }
+      default:
+  //      usage(basename);
+        exit(-1);
     }
   }
 
-	configInit();
+	configInit(configPath);
+  Config::plugins.remote.port=port;
+  Config::plugins.movieMenu.remotePort=port;
 
 //global variables:
 	end=false;
@@ -98,11 +132,6 @@ int main(int argc, char * argv[]) {
 	signal(SIGINT, term);
 	signal(SIGTERM, term);
 
-	int sock;
-	fd_set sockSelect;
-  int port=10010;
-  struct sockaddr_in local,remote;
-  socklen_t remoteSize=sizeof(remote);
 
 	FD_ZERO(&sockSelect);
 
@@ -257,9 +286,9 @@ int main(int argc, char * argv[]) {
 	      } else if (command=="Stop") {
           oplug.send("Stop");
           menuPlugin.send("Stop");
-	      } else if (command=="Previous") {
-          oplug.send("Previous");
-          menuPlugin.send("Previous");
+	      } else if (command=="Prev") {
+          oplug.send("Prev");
+          menuPlugin.send("Prev");
 	      } else if (command=="Next") {
           oplug.send("Next");
           menuPlugin.send("Next");

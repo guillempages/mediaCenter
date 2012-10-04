@@ -1,13 +1,15 @@
 CPPFLAGS+=-I$(top_srcdir)/include
 AUTOMAKE_OPTIONS=foreign subdir-objects
 
-bin_PROGRAMS=mediaCenter $(LIRC) $(XMMS) $(XINE) $(MPLAYER) $(IMON) $(GLMENU)
+bin_PROGRAMS=mediaCenter_old mediaCenter $(LIRC) $(XMMS) $(XINE) $(MPLAYER) $(IMON) $(GLMENU)
 EXTRA_PROGRAMS=mediaCenter_lirc mediaCenter_xmms mediaCenter_xine mediaCenter_mplayer mediaCenter_imon mediaCenter_glmenu
 
 #noinst_LIBRARIES=libmediaCenter_output.a
 #libmediaCenter_output_a_SOURCES=mediaCenter_output.cpp
 
-mediaCenter_SOURCES = mediaCenter.cpp config.cpp basePlugin.cpp remotePlugin.cpp displayPlugin.cpp outputPlugin.cpp menuPlugin.cpp recorderPlugin.cpp
+mediaCenter_old_SOURCES = mediaCenter.cpp config.cpp basePlugin.cpp remotePlugin.cpp displayPlugin.cpp outputPlugin.cpp menuPlugin.cpp recorderPlugin.cpp
+
+mediaCenter_SOURCES = mediaCenter_main.cpp hsm.cpp config.cpp basePlugin.cpp remotePlugin.cpp displayPlugin.cpp outputPlugin.cpp menuPlugin.cpp recorderPlugin.cpp
 
 mediaCenter_glmenu_SOURCES = mediaCenter_glmenu.cpp
 mediaCenter_glmenu_LDADD=-lglut

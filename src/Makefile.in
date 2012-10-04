@@ -32,8 +32,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = mediaCenter$(EXEEXT) $(LIRC) $(XMMS) $(XINE) $(MPLAYER) \
-	$(IMON) $(GLMENU)
+bin_PROGRAMS = mediaCenter_old$(EXEEXT) mediaCenter$(EXEEXT) $(LIRC) \
+	$(XMMS) $(XINE) $(MPLAYER) $(IMON) $(GLMENU)
 EXTRA_PROGRAMS = mediaCenter_lirc$(EXEEXT) mediaCenter_xmms$(EXEEXT) \
 	mediaCenter_xine$(EXEEXT) mediaCenter_mplayer$(EXEEXT) \
 	mediaCenter_imon$(EXEEXT) mediaCenter_glmenu$(EXEEXT)
@@ -49,8 +49,8 @@ CONFIG_CLEAN_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
-am_mediaCenter_OBJECTS = mediaCenter.$(OBJEXT) config.$(OBJEXT) \
-	basePlugin.$(OBJEXT) remotePlugin.$(OBJEXT) \
+am_mediaCenter_OBJECTS = mediaCenter_main.$(OBJEXT) hsm.$(OBJEXT) \
+	config.$(OBJEXT) basePlugin.$(OBJEXT) remotePlugin.$(OBJEXT) \
 	displayPlugin.$(OBJEXT) outputPlugin.$(OBJEXT) \
 	menuPlugin.$(OBJEXT) recorderPlugin.$(OBJEXT)
 mediaCenter_OBJECTS = $(am_mediaCenter_OBJECTS)
@@ -69,6 +69,12 @@ am_mediaCenter_mplayer_OBJECTS = mediaCenter_mplayer.$(OBJEXT) \
 	mplayerRemote.$(OBJEXT)
 mediaCenter_mplayer_OBJECTS = $(am_mediaCenter_mplayer_OBJECTS)
 mediaCenter_mplayer_LDADD = $(LDADD)
+am_mediaCenter_old_OBJECTS = mediaCenter.$(OBJEXT) config.$(OBJEXT) \
+	basePlugin.$(OBJEXT) remotePlugin.$(OBJEXT) \
+	displayPlugin.$(OBJEXT) outputPlugin.$(OBJEXT) \
+	menuPlugin.$(OBJEXT) recorderPlugin.$(OBJEXT)
+mediaCenter_old_OBJECTS = $(am_mediaCenter_old_OBJECTS)
+mediaCenter_old_LDADD = $(LDADD)
 am_mediaCenter_xine_OBJECTS = mediaCenter_xine.$(OBJEXT) \
 	mediaCenter_output.$(OBJEXT) tvcontrol.$(OBJEXT) \
 	xineRemote.$(OBJEXT)
@@ -92,12 +98,12 @@ CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	$(LDFLAGS) -o $@
 SOURCES = $(mediaCenter_SOURCES) $(mediaCenter_glmenu_SOURCES) \
 	$(mediaCenter_imon_SOURCES) $(mediaCenter_lirc_SOURCES) \
-	$(mediaCenter_mplayer_SOURCES) $(mediaCenter_xine_SOURCES) \
-	$(mediaCenter_xmms_SOURCES)
+	$(mediaCenter_mplayer_SOURCES) $(mediaCenter_old_SOURCES) \
+	$(mediaCenter_xine_SOURCES) $(mediaCenter_xmms_SOURCES)
 DIST_SOURCES = $(mediaCenter_SOURCES) $(mediaCenter_glmenu_SOURCES) \
 	$(mediaCenter_imon_SOURCES) $(mediaCenter_lirc_SOURCES) \
-	$(mediaCenter_mplayer_SOURCES) $(mediaCenter_xine_SOURCES) \
-	$(mediaCenter_xmms_SOURCES)
+	$(mediaCenter_mplayer_SOURCES) $(mediaCenter_old_SOURCES) \
+	$(mediaCenter_xine_SOURCES) $(mediaCenter_xmms_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -225,7 +231,8 @@ AUTOMAKE_OPTIONS = foreign subdir-objects
 
 #noinst_LIBRARIES=libmediaCenter_output.a
 #libmediaCenter_output_a_SOURCES=mediaCenter_output.cpp
-mediaCenter_SOURCES = mediaCenter.cpp config.cpp basePlugin.cpp remotePlugin.cpp displayPlugin.cpp outputPlugin.cpp menuPlugin.cpp recorderPlugin.cpp
+mediaCenter_old_SOURCES = mediaCenter.cpp config.cpp basePlugin.cpp remotePlugin.cpp displayPlugin.cpp outputPlugin.cpp menuPlugin.cpp recorderPlugin.cpp
+mediaCenter_SOURCES = mediaCenter_main.cpp hsm.cpp config.cpp basePlugin.cpp remotePlugin.cpp displayPlugin.cpp outputPlugin.cpp menuPlugin.cpp recorderPlugin.cpp
 mediaCenter_glmenu_SOURCES = mediaCenter_glmenu.cpp
 mediaCenter_glmenu_LDADD = -lglut
 mediaCenter_lirc_SOURCES = mediaCenter_lirc.cpp
@@ -316,6 +323,9 @@ mediaCenter_lirc$(EXEEXT): $(mediaCenter_lirc_OBJECTS) $(mediaCenter_lirc_DEPEND
 mediaCenter_mplayer$(EXEEXT): $(mediaCenter_mplayer_OBJECTS) $(mediaCenter_mplayer_DEPENDENCIES) 
 	@rm -f mediaCenter_mplayer$(EXEEXT)
 	$(CXXLINK) $(mediaCenter_mplayer_OBJECTS) $(mediaCenter_mplayer_LDADD) $(LIBS)
+mediaCenter_old$(EXEEXT): $(mediaCenter_old_OBJECTS) $(mediaCenter_old_DEPENDENCIES) 
+	@rm -f mediaCenter_old$(EXEEXT)
+	$(CXXLINK) $(mediaCenter_old_OBJECTS) $(mediaCenter_old_LDADD) $(LIBS)
 mediaCenter_xine$(EXEEXT): $(mediaCenter_xine_OBJECTS) $(mediaCenter_xine_DEPENDENCIES) 
 	@rm -f mediaCenter_xine$(EXEEXT)
 	$(CXXLINK) $(mediaCenter_xine_OBJECTS) $(mediaCenter_xine_LDADD) $(LIBS)
@@ -332,10 +342,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/basePlugin.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/config.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/displayPlugin.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hsm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mediaCenter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mediaCenter_glmenu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mediaCenter_imon.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mediaCenter_lirc.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mediaCenter_main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mediaCenter_mplayer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mediaCenter_output.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mediaCenter_xine.Po@am__quote@
