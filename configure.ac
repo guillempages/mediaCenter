@@ -18,6 +18,7 @@ AC_ARG_WITH([xmms],[AS_HELP_STRING([--with-xmms],[Compile xmms plugin])],[],[wit
 AC_ARG_WITH([xine],[AS_HELP_STRING([--with-xine],[Compile xine plugin])],[],[with_xine=check])
 AC_ARG_WITH([mplayer],[AS_HELP_STRING([--with-mplayer],[Compile mplayer plugin])],[],[with_mplayer=yes])
 AC_ARG_WITH([imon],[AS_HELP_STRING([--with-imon],[Compile imon plugin])],[],[with_imon=check])
+AC_ARG_WITH([lirc],[AS_HELP_STRING([--with-lirc],[Compile lirc plugin])],[],[with_lirc=check])
 AC_ARG_WITH([openGL],[AS_HELP_STRING([--with-openGL],[Compile openGL menu plugin])],[],[with_openGL=check])
 
 # Checks for programs.
@@ -83,24 +84,17 @@ AS_IF([test "x$IMON" == x],
 XINE=
 AS_IF([test "x$with_xine" != xno],
     [AC_CHECK_PROG([XINE], [xine], 
-      ["yes"],
-#      ["no"])
+      [yes],
      if test "x$with_xine" == xyes && "x$XINE" == xno; then
         [
-         AC_SUBST([XINE],["yes"])
+         AC_SUBST([XINE],[yes])
          AC_MSG_WARN( [--with-xine was given, but xine was not found])
         ]
      else 
-        AC_SUBST([XINE],["no"])
+        AC_SUBST([XINE],[no])
      fi)
     ])
 
-#XINE=
-#AS_IF([test "x$with_xine" == xyes && test "x$XINE" != "xyes"],
-#  [AC_MSG_WARN( [--with-xine was given, but xine was not found])
-#   AC_SUBST([XINE],["yes"])
-#  ]
-# )
 AC_MSG_NOTICE([XINE = $XINE])
 
 WITH_XINE=

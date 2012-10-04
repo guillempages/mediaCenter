@@ -4,6 +4,7 @@
 
 #include <string>
 #include <iostream>
+#include <stdio.h>
 
 using Config::plugins;
 using std::string;

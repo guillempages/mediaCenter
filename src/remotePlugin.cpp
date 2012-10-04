@@ -3,6 +3,7 @@
 #include "remotePlugin.h"
 
 #include <string>
+#include <stdio.h>
 
 using Config::plugins;
 using std::string;
