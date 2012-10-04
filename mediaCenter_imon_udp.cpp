@@ -4,6 +4,7 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/signal.h>
@@ -14,7 +15,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-#include <lcd.h>
+#include <lcd>
 
 #include "utils.h"
 

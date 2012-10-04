@@ -5,6 +5,7 @@
 
 #include <sys/time.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/signal.h>
 #include <sys/wait.h>
