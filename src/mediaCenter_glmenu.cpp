@@ -4,8 +4,12 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <algorithm>
 #include <string>
+#include <string.h>
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/signal.h>
@@ -268,7 +272,7 @@ vector<string> listDirectory(const string& directory) {
     pos=file.rfind(".");
     if (pos >= 0) {	  
       ext=file.substr(pos+1);
-      transform(ext.begin(),ext.end(),ext.begin(),tolower);
+      std::transform(ext.begin(),ext.end(),ext.begin(),tolower);
     } else {
       ext="";
     }
@@ -291,7 +295,7 @@ vector<string> listDirectory(const string& directory) {
 
     entry=readdir(films);
   }
-  sort(menuFiles.begin(),menuFiles.end());
+  std::sort(menuFiles.begin(),menuFiles.end());
   sort(result.begin(),result.end());
 
 }

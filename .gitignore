@@ -11,11 +11,11 @@ src/.deps/
 src/Makefile
 
 mediaCenter
-TVControl
 mediaCenter_glmenu
 mediaCenter_imon
 mediaCenter_lirc
 mediaCenter_mplayer
+mediaCenter_old
 mediaCenter_xine
 mediaCenter_xmms
 

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <iostream>
+#include <stdio.h>
 
 #include "config.h"
 

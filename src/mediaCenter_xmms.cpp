@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 
+#include <stdlib.h>
 #include <xmms/xmmsctrl.h>
 
 #include "mediaCenter_xmms.h"
