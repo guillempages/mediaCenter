@@ -1,0 +1,10 @@
+*.o
+bin/
+mediaCenter
+TVControl
+mediaCenter_glmenu
+mediaCenter_imon
+mediaCenter_mplayer
+mediaCenter_xine
+mediaCenter_xmms
+
