@@ -14,6 +14,7 @@ class OutputPlugin : public Plugin {
     ~OutputPlugin();
 
    virtual bool start(const Config::OutputPluginConf & plugin);
+   virtual bool stop();
 
   protected:
 };

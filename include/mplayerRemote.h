@@ -1,14 +1,13 @@
-#ifndef XINEREMOTE_H
-#define XINEREMOTE_H
+#ifndef MPLAYERREMOTE_H
+#define MPLAYERREMOTE_H
 
 #include <string>
 
-class XineRemote {
+class MplayerRemote {
   public:
-    XineRemote(std::string address="localhost",int port=6789);
-    ~XineRemote();
+    MplayerRemote(std::string address="localhost",int port=6789);
+    ~MplayerRemote();
 
-    static void toggleGUI();
     static int  getPosition();
     static int  getLength();
     static int  getChapter();
@@ -22,8 +21,6 @@ class XineRemote {
     static std::string getArtist();
     static std::string getStatus();
     static std::string getSpeed();
-  
-    static bool quit();
 
   protected:
     static int socket_;

@@ -8,6 +8,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
+#include "defines.h"
+
 #ifdef DEBUG
 #define DBG(x) x
 #else
@@ -44,16 +46,17 @@ inline int myRecv(int sock, char * buffer, int buflen, int _timeout=1, struct so
   FD_SET(sock,&sockSelect);
 
   error=select(sock+1,&sockSelect,NULL,NULL,&timeout);
-  if (error<=0) {
+  if (error<0) {
+    DBG(perror("Select error while receiving from socket"));
     return error;
-  } else {
+  } else if (error > 0) {
     error=recvfrom(sock,buffer,buflen,0,(struct sockaddr *)from,&addrlen); 
     if (error>0) {
       buffer[error<buflen?error:buflen]=0;
     } else {
       buffer[0]=0;
     }
-    DBG(std::cout << "Received " << error << " Bytes: " << buffer << std::endl;)
+    DBG(std::cout << "Received " << error << " Bytes: ->" << buffer << "<-" << std::endl;)
   }
   return error;
 }

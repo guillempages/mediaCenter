@@ -1,9 +1,10 @@
+#include "defines.h"
+
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <set>
 
-#include <stdio.h>
 #include <sys/time.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -14,7 +15,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include "mediaCenter_output.h"
+#include "mediaCenter_output.h" 
 #include "utils.h"
 
 using std::cout;
@@ -27,22 +28,21 @@ using std::set;
 //global Variables
 bool end=false;
 int sock=-1;
-int clisock=-1;
 
 set<int> PIDs;
 
-MediaCenter_Output *app=NULL;
+MediaCenter_output *app=NULL;
 
 //Only way to stop the program is to kill it; so
 // catch the signal and clean everything.
-void term(int result) {
+RETSIGTYPE term(int result) {
  
   DBG(cout << "Terminating..." << endl);
 
   if (!end && app && (app->getPID() >= 0)) {
     //if application is running, kill it;
     //but only if we are the parent!
-    app->stop();
+    app->exit();
     delete app;
     app=NULL;
   }
@@ -56,18 +56,11 @@ void term(int result) {
     }
     sock=-1;
   }
-  if (clisock >= 0) {
-    shutdown(sock,SHUT_RDWR);
-    if (close(clisock) < 0 ) {
-      DBG(perror("close(clisock)");)
-    }
-    clisock=-1;
-  }
 
   exit(result);
 }
 
-void clavaEstaca(int =0) {
+RETSIGTYPE clavaEstaca(int =0) {
   union wait status;
   int PID_;
   while ((PID_=wait(&status))>=0) {
@@ -89,7 +82,7 @@ void usage(string progName) {
        << "  " << progName << "-t type [-p port] [-f file] [-c config_file]" << endl;
 }
 
-int MediaCenter_Output::exec(const string& program, const char * argv[]) {
+int MediaCenter_output::exec(const string& program, const char * argv[]) {
   int PID=fork();
 
   if (PID<0) {
@@ -98,7 +91,7 @@ int MediaCenter_Output::exec(const string& program, const char * argv[]) {
   if (PID==0) {//child
     execvp(program.c_str(),const_cast<char**>(argv));
     perror("execvp");
-    exit(-1);
+    ::exit(-1);
   }
 
   return PID;
@@ -109,43 +102,27 @@ void newConnection() {
   struct sockaddr_in remote;
   socklen_t lenremote=sizeof(remote);
 
-  clisock=accept(sock,(struct sockaddr*)&remote,&lenremote);
-
-  if (clisock<0) {
-    perror("new Connection");
-    return;
-  }
-
-  int pid=fork();
-  if (pid<0) { //error
-    perror("fork");
-    term(-3);
-  } 
-
-  if (pid==0) { //child
-    DBG(cout << "mediaCenter_output. Socket forked." << endl;)
-    close(sock);
-    sock=-1;
-  } else { //father
-    close(clisock);
-    clisock=-1;
-    PIDs.insert(pid);
-    return;
-  }
-  //due to last return; from hier on is just the child.
-
   int error=0;
   char buffer[512];
-  while(!end) {
-    error=recv(clisock,buffer,512,0);
+  struct timeval timeout;
+  fd_set sockSelect;
+  timeout.tv_sec=0;
+  timeout.tv_usec=200000; //5Hz should be enough
+
+  FD_ZERO(&sockSelect);
+  FD_SET(sock,&sockSelect);
+
+  error=select(sock+1,&sockSelect,NULL,NULL,&timeout);
+  if (error<=0) {
+    if (error<0) {
+      perror("select");
+    }
+  } else {
+    error=recvfrom(sock,buffer,512,0,(struct sockaddr*)&remote,&lenremote);
     if (error<0) {
       perror("recv");
-      end=true;
       term(-3);
     } else if (error==0) {
-      //remote closed the socket. End.
-      DBG(cout << "mediaCenter_output. Socket closed by remote" << endl;)
-      end=true;
     } else {
       if (buffer[error-1]=='\n')
         buffer[error-1]=0;
@@ -154,8 +131,8 @@ void newConnection() {
       buffer[error]=0;
       string command;
       command=buffer;
-      command=command.substr(0,command.find(' '));
       DBG(cout << "Received: " << command << "." << endl);
+      command=command.substr(0,command.find(' '));
 
       if (app) {
          if (command == "Channel") {
@@ -189,6 +166,8 @@ void newConnection() {
            DBG(cout << "Getting " << parameter << ":" );
            if (parameter=="Type") {
              result=app->getType();
+           } else if (parameter=="Artist") {
+             result=app->getArtist();
            } else if (parameter=="Title") {
              result=app->getTitle();
            } else if (parameter=="Channel") {
@@ -209,17 +188,24 @@ void newConnection() {
              result = intToString(app->isPaused());
            }
            DBG(cout << result << endl;)
-           send(clisock,result);
+           sendto(sock,remote,result);
+         } else if (command=="Play") {
+           app->play();
+         } else if (command=="Pause") {
+           app->pause();
+         } else if (command=="Stop") {
+           app->stop();
+         } else if (command=="Next") {
+           app->next();
+         } else if (command=="Previous") {
+           app->previous();
          } else if (command=="Quit") {
            end=true;
-           app->stop();
+           app->exit();
          }
       } 
     }
   }
-
-  // if we got here, the socket was closed by remote. End child.
-  term(0);
 }
 
 int main (int argc, char * argv[]) {
@@ -265,16 +251,17 @@ int main (int argc, char * argv[]) {
   DBG(cout << "Config File Name: " << config << endl);
   DBG(cout << "Port: " << port << endl);
 
-  app=new MediaCenter_Output();
+  app=newApp();
+
   app->setFilename(filename);
   app->setConfig(config);
 
   //init socket
-  sock=socket(PF_INET,SOCK_STREAM,0);
+  sock=socket(PF_INET,SOCK_DGRAM,0);
 
   struct sockaddr_in local;
 
-  local.sin_family==AF_INET;
+  local.sin_family=AF_INET;
   local.sin_port=htons(port);
   local.sin_addr.s_addr=INADDR_ANY;
 
@@ -286,11 +273,6 @@ int main (int argc, char * argv[]) {
 
   if (bind(sock,(struct sockaddr*)&local,sizeof(local))<0) {
     perror((programName+".bind").c_str());
-    term(-2);
-  }
-
-  if (listen(sock,5) < 0 ) {
-    perror((programName+".listen").c_str());
     term(-2);
   }
 
@@ -307,4 +289,35 @@ int main (int argc, char * argv[]) {
   return (0);
 
 }
+
+std::string MediaCenter_output::getTitle() {return "";}
+std::string MediaCenter_output::getArtist() {return "";}
+
+std::string MediaCenter_output::getChannel() {return "";}
+std::string MediaCenter_output::setChannel(const std::string & newChannel) {return "";}
+std::string MediaCenter_output::channelUp(int step) {return "";}
+std::string MediaCenter_output::channelDown(int step) {return "";}
+
+int MediaCenter_output::getTime() {return 0;}
+int MediaCenter_output::getTotalTime() {return 0;}
+int MediaCenter_output::getTrack() {return 0;}
+int MediaCenter_output::getTotalTracks() {return 0;}
+int MediaCenter_output::getChapter() {return 0;}
+int MediaCenter_output::getTotalChapters() {return 0;}
+
+
+bool MediaCenter_output::isPaused() {return false;}
+
+void MediaCenter_output::exit() {
+  if (pid_ > 0) {
+    kill(pid_,SIGTERM);
+  }
+}
+
+
+
+MediaCenter_output::MediaCenter_output() : pid_(0), data(0) {}
+MediaCenter_output::~MediaCenter_output() {}
+
+
 

@@ -1,11 +1,11 @@
+#include "defines.h"
+
 #include <GL/glut.h>
 #include <iostream>
 #include <vector>
 #include <string>
 
 #include <sys/time.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/signal.h>
 #include <sys/wait.h>
@@ -44,7 +44,7 @@ void finish() {
   sock=-1;
 }
 
-void term(int result=0) {
+RETSIGTYPE term(int result=0) {
   finish();
   exit(result);
 }
@@ -211,24 +211,43 @@ vector<string> listDirectory(const string& directory) {
   }
 
   struct dirent *entry=readdir(films);
-  string file,strtmp;
+  string file,strtmp,ext;
   struct stat filestat;
+  int pos=0;
 
   while (entry!=NULL) {
     file=entry->d_name;
 
     strtmp=directory+"/"+file;
     stat(strtmp.c_str(),&filestat);
-	  
-    file=file.substr(0,file.rfind("."));
 
-    if (S_ISREG(filestat.st_mode)) {
-      menuFiles.push_back(strtmp);
-      result.push_back(file);
+    pos=file.rfind(".");
+    if (pos >= 0) {	  
+      ext=file.substr(pos+1);
+      transform(ext.begin(),ext.end(),ext.begin(),tolower);
+    } else {
+      ext="";
+    }
+
+    // Check that only video files are displayed
+    if ( (ext == "mpg") ||
+         (ext == "mpeg") || 
+         (ext == "avi") || 
+         (ext == "wmv") || 
+         (ext == "divx") ) {
+
+      file=file.substr(0,pos);
+ 
+      if (S_ISREG(filestat.st_mode)) {
+        menuFiles.push_back(strtmp);
+        result.push_back(file);
+      }
     }
 
     entry=readdir(films);
   }
+  sort(menuFiles.begin(),menuFiles.end());
+  sort(result.begin(),result.end());
 
 }
 
@@ -248,8 +267,8 @@ int initGlutWindow(int argc, char* argv[]) {
 
   glutCreateWindow("window");
 
-  glutReshapeWindow(750,600);
-
+//  glutReshapeWindow(750,600);
+  glutFullScreen();
 
   glutReshapeFunc(my_reshape);
   glutKeyboardFunc(my_handle_key);

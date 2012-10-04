@@ -1,11 +1,10 @@
 #include "defines.h"
 
 #include <iostream>
+#include <fstream>
 #include <string>
 
 #include <sys/time.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/signal.h>
 #include <sys/wait.h>
@@ -34,6 +33,16 @@ bool end;
 struct lirc_config *lircConfig=NULL;
 int sock=-1;
 
+//Clear dead children
+RETSIGTYPE clavaEstaca(int =0)
+{
+  union wait status;
+  struct rusage rusage;
+  int pid;
+  while ((pid=wait3(&status, WNOHANG, &rusage)) >0) {
+  }
+}
+
 //Only way to stop the program is to kill it; so
 // catch the signal and clean everything.
 RETSIGTYPE term(int result=0) {
@@ -58,11 +67,68 @@ void usage(string progName) {
        << "  " << progName << " [-n Name] [-s server] [-p port]" << endl;
 }
 
+
+//endless loop, that checks when lircd's pid changes
+// and kills the lirc plugin process when that happens
+// The server should restart the lirc plugin, so rebind to lirc
+void start_watch_lircd_pid() {
+  int myPID=fork();
+
+  if (myPID<0) { //could not fork.
+    perror("Lirc Plugin:");
+    exit(-3);
+  }
+  if (!myPID) { //the child.
+    //let it run / skip the endless loop
+    return;
+  }
+
+  //now this is the parent.
+  //check lircd's PID every 5 minutes, and kill the child 
+  //whenever it changes (and exit, of course).
+  int lircdPID=0;
+
+  while (1) {
+    // If the child dies, exit
+    if (kill(myPID,0)) {
+      cerr << "The lirc plugin has stopped. No need to monitor" << endl;
+      break;
+    }
+
+    int newPID=-1;
+    std::fstream file;
+
+    file.open("/var/run/lircd.pid",std::fstream::in);
+    if (file.fail()) { //the pid file could not be opened
+      DBG(cerr << "Could not open lircd.pid file. Will not monitor the PID" << endl);
+      newPID=0;
+    } else {
+      file >> newPID;
+      file.close();
+    }
+
+    if (newPID) {
+      if (!lircdPID) { //set the value on the first iteration
+        lircdPID = newPID;
+      } else if (newPID != lircdPID) { //different PID => Exit
+        cerr << "The lirc daemon has changed PID. lirc plugin will stop now." << endl;
+        break;
+      }
+    }
+
+    //Check only once per minute
+    sleep(60);
+  }
+  kill(myPID,SIGTERM);
+  exit(-4);
+}
+
 int main(int argc, char * argv[]) {
 
   end=false;
 
   //signal handlers
+  signal(SIGCHLD, clavaEstaca);
   signal(SIGINT, term);
   signal(SIGTERM, term);
 
@@ -100,12 +166,13 @@ int main(int argc, char * argv[]) {
   DBG(cout << "Server: " << server << endl);
   DBG(cout << "Port: " << port << endl);
 
+  start_watch_lircd_pid();
+
   //init lirc
   int lircSocket;
 
   DBG(cout << "Listening for events for " << programName << endl);
   if((lircSocket=lirc_init(const_cast<char*>(basename),true))==-1) 
-  //if((lircSocket=lirc_init(const_cast<char *>(programName.c_str()),true))==-1) 
     exit(EXIT_FAILURE);
   lirc_readconfig(NULL,&lircConfig,NULL);
 

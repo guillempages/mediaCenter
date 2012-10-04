@@ -7,7 +7,6 @@
 #include <vector>
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <fcntl.h>
 
 #include <sys/time.h>
@@ -15,6 +14,7 @@
 #include <sys/signal.h>
 #include <sys/wait.h>
 #include <sys/select.h>
+#include <errno.h>
 
 #include <arpa/inet.h>
 
@@ -23,7 +23,7 @@
 #include "displayPlugin.h"
 #include "outputPlugin.h"
 #include "menuPlugin.h"
-#include "recordPlugin.h"
+#include "recorderPlugin.h"
 
 
 using std::cout;
@@ -79,6 +79,14 @@ inline void stopOutput() {
 
 int main(int argc, char * argv[]) {
 
+  if (argc > 1) {
+    if ( string(argv[1]) == "-v") {
+      cout << PACKAGE_NAME << " version " << VERSION << endl;
+      cout << "Copyright (c) Guillem Pages Gassull 2008." << endl;
+      exit(0);
+    }
+  }
+
 	configInit();
 
 //global variables:
@@ -115,7 +123,6 @@ int main(int argc, char * argv[]) {
   }
 
 	FD_SET(sock,&sockSelect);
-
 	
   //variables for reading the commands
 	string command;
@@ -124,7 +131,7 @@ int main(int argc, char * argv[]) {
 	int ret;
 	struct timeval timeout;
 	int error=0;
-	timeout.tv_sec=0;
+	timeout.tv_sec=1;
 	timeout.tv_usec=200000; //5Hz should be enough.
 
 
@@ -137,19 +144,32 @@ int main(int argc, char * argv[]) {
   remotePlugin.start(Config::plugins.remote);
   displayPlugin.start(Config::plugins.display);
 
+  //make socket non-blocking
+  fcntl(sock, F_SETFL, (fcntl(sock, F_GETFL) | O_NONBLOCK));
+
   // main loop
 	while(!end) {
-	  error=select(sock+1,&sockSelect,NULL,NULL,&timeout);
+	  //error=select(sock+1,&sockSelect,NULL,NULL,&timeout);
+	  error=select(sock+1,&sockSelect,&sockSelect,&sockSelect,&timeout);
 		if (error<0) { //nothing received...
 		  if (error<0) {
 	      perror("select");
 	    }
-	    timeout.tv_sec=0;
+	    timeout.tv_sec=1;
 	    timeout.tv_usec=200000; //5Hz should be enough.
   	} else {
       error=recv(sock,code,512,0);
       if (error<=0) {
-        perror(argv[0]);
+        if (errno == EAGAIN) { // Nothing to read...
+          if ( !remotePlugin.alive()) {
+            cerr << "Remote plugin was stopped." << endl
+                 << "restarting it again" << endl;
+            remotePlugin.start(Config::plugins.remote);
+          }
+          usleep(100000); //Sleep for 0.1 seconds
+        } else {
+          perror(argv[0]);
+        }
       } else {
         if (code[error-1]=='\n') {
           code[error-1]=0;
@@ -227,6 +247,21 @@ int main(int argc, char * argv[]) {
           oplug.send("Down");
           menuPlugin.send("Down");
           recordPlugin.send("Down");
+	      } else if (command=="Play") {
+          oplug.send("Play");
+          menuPlugin.send("Play");
+	      } else if (command=="Pause") {
+          oplug.send("Pause");
+          menuPlugin.send("Pause");
+	      } else if (command=="Stop") {
+          oplug.send("Stop");
+          menuPlugin.send("Stop");
+	      } else if (command=="Previous") {
+          oplug.send("Previous");
+          menuPlugin.send("Previous");
+	      } else if (command=="Next") {
+          oplug.send("Next");
+          menuPlugin.send("Next");
 	      } else if (command=="1") {
           oplug.send("1");
           menuPlugin.send("1");

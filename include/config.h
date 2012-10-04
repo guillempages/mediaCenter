@@ -47,7 +47,7 @@ class MenuPluginConf : public OutputPluginConf {
 
 class RecordPluginConf : public PluginConf {
  public:
-  RecordPluginConf(const std::string& type="record", const std::string& path="mediaCenter_record", const std::string & file="", const std::string & format= "mpg");
+  RecordPluginConf(const std::string& type="record", const std::string& path="mediaCenter_record", const std::string& file="", const std::string& format="mpg");
   std::string file;
   std::string format;
 };
@@ -63,19 +63,17 @@ class Plugins {
   OutputPluginConf movie;
   MenuPluginConf movieMenu;
   OutputPluginConf music;
-  RecordPluginConf record;
-  
+  RecordPluginConf record; 
+ 
 };
 
 
-//extern Paths paths;
 extern Plugins plugins;
 }; //namespace Config
 
 std::ostream & operator<<(std::ostream& ostr, const Config::PluginConf & plugin);
 std::ostream & operator<<(std::ostream& ostr, const Config::Plugins & plugins);
 
-//Config::Paths & getPaths();
 Config::Plugins & getPlugins();
 
 void configInit();

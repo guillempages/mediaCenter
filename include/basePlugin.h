@@ -25,6 +25,7 @@ class Plugin {
   void setPort(int port);
   int getPort() const;
   int send(const std::string& msg) const;
+  int alive();
 
  protected:
   int PID_;

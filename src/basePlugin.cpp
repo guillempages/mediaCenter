@@ -1,3 +1,4 @@
+#include "defines.h"
 #include "basePlugin.h"
 
 #include <sys/types.h>
@@ -6,8 +7,6 @@
 #include <string>
 #include <iostream>
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -59,4 +58,15 @@ int Plugin::send(const string& msg) const {
   }  
   
   return sendto(sock,msg.c_str(),msg.length()+1,0,(struct sockaddr *)&remote,sizeof(remote));
+}
+
+int Plugin::alive() {
+  if (!PID_) {
+    return 0;
+  }
+  if (kill(PID_,0) ) {
+    stop();
+    return 0;
+  }
+  return(1);
 }

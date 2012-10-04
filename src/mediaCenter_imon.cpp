@@ -1,10 +1,10 @@
+#include "defines.h"
+
 #include <string>
 #include <iostream>
 #include <iomanip>
 
 #include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/signal.h>
@@ -30,14 +30,15 @@ using std::setfill;
 int sock=-1;
 bool end=false;
 
-void term(int result=0) {
+LCD * lcd;
+
+RETSIGTYPE term(int result=0) {
   if (sock>=0) {
     close(sock);
   }
 
-  sendLine1("",0);
-  sendLine2("",0);
-  closeServer();
+  lcd->clear();
+  lcd->disconnect();
 
   exit(result);
 }
@@ -101,8 +102,8 @@ int ask(int sock, struct sockaddr_in& to, const std::string& text, std::string &
   error=recv(sock,buffer,512,0);
   if (error < 0) {
     perror("Receive");
-    sendLine1("",0);
-    sendLine2("",0);
+    lcd->sendLine("",1);
+    lcd->sendLine("",2);
     return error;
   } else {
     buffer[error]=0;
@@ -174,7 +175,7 @@ int main(int argc, char * argv[]) {
   DBG(cout << "Port: " << port << endl);
 
 
-  getServer(11111,"localhost",0);
+  lcd=new LCD;
 
   sock=socket(PF_INET,SOCK_DGRAM,0);
   if (sock<0) {
@@ -208,12 +209,19 @@ int main(int argc, char * argv[]) {
     term(-2);
   }
 
+  int countFailures=0;
+
   while (!end) {
     error=ask(sock,remote,"Get Type",type);
     if (error <= 0) {
+      if ( countFailures < 100 ) {
+        lcd->clear();
+        countFailures++;
+      }
       continue; //if nothing received, try again.
     } else {
-      sendLine1(type.c_str(),type.length());
+      countFailures=0;
+      lcd->sendLine(type,1);
       string artist,title,oldTitle,channel,oldChannel;
       stringstream sstream;
       int currTime,totalTime,track,totalTracks,chapter,totalChapters;
@@ -245,9 +253,9 @@ int main(int argc, char * argv[]) {
           sstream << formatTime(currTime,totalTime,paused);
           if (oldTitle!=title) {
             DBG(cout << "Title: " << title << endl;)
-            sendLine1(title.c_str(),title.length());
+            lcd->sendLine(title,1);
           }
-          sendLine2(sstream.str().c_str(),sstream.str().length());
+          lcd->sendLine(sstream.str(),2);
            
         } else if (type == "TV") {
           //print channel name 
@@ -258,11 +266,11 @@ int main(int argc, char * argv[]) {
             break;
           if (oldChannel!=channel) {
             DBG(cout << "Channel: " << channel << endl;)
-            sendLine1(channel.c_str(),channel.length());
+            lcd->sendLine(channel,1);
           }
           if (oldTitle!=title) {
             DBG(cout << "Title: " << title << endl;)
-            sendLine2(title.c_str(),title.length());
+            lcd->sendLine(title,2);
           }
 
         } else if ((type == "music") || (type == "CD")) {
@@ -283,20 +291,31 @@ int main(int argc, char * argv[]) {
             title=artist + " - " + title;
           }
 
-          sstream << setfill(' ') << setw(3) << track << "/" << setw(3) << setfill('0');
+          int digits;
+          if (totalTracks<1000) {
+            digits=3; 
+          } else if (totalTracks < 10000) { 
+            digits=4;
+          } else {
+            digits=5;
+          }
+
+          sstream << setfill(' ') << setw(digits) << track << "/" << setw(6-digits) << setfill('0');
           if (totalTracks<1000) {
             sstream << totalTracks;
+          } else if (totalTracks < 10000) {
+            sstream << "++";
           } else {
-            sstream << "+++";
+            sstream << "+";
           }
           if (ask(sock,remote,"Get Paused",paused)<=0)
             break;
           sstream << formatTime(currTime,totalTime,paused);
           if (oldTitle!=title) {
             DBG(cout << "Title: " << title << endl;)
-            sendLine1(title.c_str(),title.length());
+            lcd->sendLine(title,1);
           }
-          sendLine2(sstream.str().c_str(),sstream.str().length());
+          lcd->sendLine(sstream.str(),2);
         } else if (type == "movie") {
           if (ask(sock,remote,"Get Title",title)<=0)
             break;
@@ -309,16 +328,15 @@ int main(int argc, char * argv[]) {
           if (ask(sock,remote,"Get Paused",paused)<=0)
             break;
           sstream << formatTime(currTime,totalTime,paused);
+DBG(cout << "Time: " << currTime << "/" << totalTime << endl);
           if (oldTitle!=title) {
             DBG(cout << "Title: " << title << endl;)
-            sendLine1(title.c_str(),title.length());
+            lcd->sendLine(title,1);
           }
-          sendLine2(sstream.str().c_str(),sstream.str().length());
+          lcd->sendLine(sstream.str(),2);
         }
       } //while
       //if error on receive (e.g. timeout), clear LCD
-      sendLine1("",0);
-      sendLine2("",0);
     }
   }
   

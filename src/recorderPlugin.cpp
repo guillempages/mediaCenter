@@ -1,11 +1,7 @@
 #include "config.h"
-#include "recordPlugin.h"
-
-//#include <sys/types.h>
-//#include <unistd.h>
+#include "recorderPlugin.h"
 
 #include <string>
-#include <stdio.h>
 
 using Config::plugins;
 using std::string;

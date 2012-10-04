@@ -1,9 +1,11 @@
+#include "defines.h"
+
 #include <iostream>
 #include <string>
 
 #include <xmms/xmmsctrl.h>
 
-#include "mediaCenter_output.h"
+#include "mediaCenter_xmms.h"
 
 using std::cout;
 using std::cerr;
@@ -17,12 +19,16 @@ using std::string;
 #define DBG(x)
 #endif
 
-MediaCenter_Output::MediaCenter_Output(): pid_(-1),data(NULL){
+MediaCenter_output * newApp() {
+  return new MediaCenter_xmms;
 }
 
-MediaCenter_Output::~MediaCenter_Output() {}
+MediaCenter_xmms::MediaCenter_xmms() {
+}
 
-int MediaCenter_Output::startApplication() {
+MediaCenter_xmms::~MediaCenter_xmms() {}
+
+int MediaCenter_xmms::startApplication() {
 
   const char * argv [4];
 
@@ -39,7 +45,7 @@ int MediaCenter_Output::startApplication() {
   return pid_;
 }
 
-int MediaCenter_Output::getTrack() {
+int MediaCenter_xmms::getTrack() {
   int result=0;
   if (xmms_remote_is_running(0)) {
     result=xmms_remote_get_playlist_pos(0)+1;
@@ -47,7 +53,7 @@ int MediaCenter_Output::getTrack() {
   return result;
 }
 
-int MediaCenter_Output::getTotalTracks() {
+int MediaCenter_xmms::getTotalTracks() {
   int result=0;
   if (xmms_remote_is_running(0)) {
     result=xmms_remote_get_playlist_length(0);
@@ -55,17 +61,7 @@ int MediaCenter_Output::getTotalTracks() {
   return result;
 }
 
-int MediaCenter_Output::getChapter() {
-  int result=0;
-  return result;
-}
-
-int MediaCenter_Output::getTotalChapters() {
-  int result=0;
-  return result;
-}
-
-int MediaCenter_Output::getTime() {
+int MediaCenter_xmms::getTime() {
   int result=0;
   if (xmms_remote_is_running(0)) {
     result=xmms_remote_get_output_time(0)/1000;
@@ -73,7 +69,7 @@ int MediaCenter_Output::getTime() {
   return result;
 }
 
-int MediaCenter_Output::getTotalTime() {
+int MediaCenter_xmms::getTotalTime() {
   int result=0;
   int pos=0;
   if (xmms_remote_is_running(0)) {
@@ -83,12 +79,12 @@ int MediaCenter_Output::getTotalTime() {
   return result;
 }
 
-string MediaCenter_Output::getArtist() {
+string MediaCenter_xmms::getArtist() {
   // xmms does not allow asking only for artist.
   return "";
 }
 
-string MediaCenter_Output::getTitle() {
+string MediaCenter_xmms::getTitle() {
   int pos=0;
   string result="";
   if (xmms_remote_is_running(0)) {
@@ -98,25 +94,7 @@ string MediaCenter_Output::getTitle() {
   return result;
 }
 
-string MediaCenter_Output::getChannel() {
-  string result="No Channel";
-
-  return result;
-}
-
-string MediaCenter_Output::setChannel(const std::string & ) {
-  return getChannel();
-}
-
-string MediaCenter_Output::channelUp(int ) {
-  return getChannel();
-}
-
-string MediaCenter_Output::channelDown(int ) {
-  return getChannel();
-}
-
-bool MediaCenter_Output::isPaused() {
+bool MediaCenter_xmms::isPaused() {
   bool result=true;
   if (xmms_remote_is_running(0)) {
     result=xmms_remote_is_paused(0);
@@ -125,3 +103,38 @@ bool MediaCenter_Output::isPaused() {
   return result;
 }
 
+void MediaCenter_xmms::play() {
+  if (xmms_remote_is_running(0)) {
+    xmms_remote_play(0);
+  }
+}
+
+void MediaCenter_xmms::pause() {
+  if (xmms_remote_is_running(0)) {
+    xmms_remote_play_pause(0);
+  }
+}
+
+void MediaCenter_xmms::stop() {
+  if (xmms_remote_is_running(0)) {
+    xmms_remote_stop(0);
+  }
+}
+
+void MediaCenter_xmms::next() {
+  if (xmms_remote_is_running(0)) {
+    xmms_remote_playlist_next(0);
+  }
+}
+
+void MediaCenter_xmms::previous() {
+  if (xmms_remote_is_running(0)) {
+    xmms_remote_playlist_prev(0);
+  }
+}
+
+void MediaCenter_xmms::exit() {
+  if (xmms_remote_is_running(0)) {
+    xmms_remote_quit(0);
+  }
+}

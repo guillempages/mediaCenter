@@ -18,16 +18,16 @@
 #include <sys/poll.h>
 
 #include "utils.h"
-#include "xineRemote.h"
+#include "mplayerRemote.h"
 
 using std::string;
 
-int XineRemote::socket_=-1;
+int MplayerRemote::socket_=-1;
 
-XineRemote::XineRemote(string _address, int port) {
+MplayerRemote::MplayerRemote(string _address, int port) {
 }
 
-int XineRemote::initSocket(const string& _address, int port) {
+int MplayerRemote::initSocket(const string& _address, int port) {
   if (socket_>=0) {
     close(socket_);
   }
@@ -40,7 +40,7 @@ int XineRemote::initSocket(const string& _address, int port) {
   socket_=socket(PF_INET, SOCK_STREAM, 0);
   
   if (socket_<0) {
-    perror("XineRemote. Could not create socket");
+    perror("MplayerRemote. Could not create socket");
     return socket_;
   }
 
@@ -52,14 +52,14 @@ int XineRemote::initSocket(const string& _address, int port) {
   if ( phe=gethostbyname(_address.c_str()) )
     memcpy((char *)&pAddress->sin_addr, phe->h_addr, phe->h_length);
   else if ( (pAddress->sin_addr.s_addr = inet_addr(_address.c_str())) == INADDR_NONE ) {
-    perror("XineRemote. Could not resolve address");
+    perror("MplayerRemote. Could not resolve address");
     close(socket_);
     socket_=-1;
     return socket_;
   }
   
   if (connect(socket_,(struct sockaddr *)pAddress,sizeof(address))<0) {
-    perror("XineRemote. Could not connect socket");
+    perror("MplayerRemote. Could not connect socket");
     close(socket_);
     socket_=-1;
     return socket_;
@@ -69,20 +69,18 @@ int XineRemote::initSocket(const string& _address, int port) {
   int error;
   //Read greeting
   if (myRecv(socket_,buffer,256) <=0) {
-    perror("XineRemote recv");
+    perror("MplayerRemote recv");
     close(socket_);
     socket_=-1;
     return socket_;
   }
 }
 
-XineRemote::~XineRemote() {
+MplayerRemote::~MplayerRemote() {
 }
 
-bool XineRemote::doVoidCommand(const string& command, string arg1, string arg2) {
+bool MplayerRemote::doVoidCommand(const string& command, string arg1, string arg2) {
   string line;
- 
-  int error=0;
 
   if (socket_<0) {
     if (initSocket()<0) {
@@ -100,27 +98,21 @@ bool XineRemote::doVoidCommand(const string& command, string arg1, string arg2) 
     }
   }
   line+="\n";
-  char buffer[257];
-  while (myRecv(socket_,buffer,256,0)>0) {
-    //void
-  }
-
-  error=send(socket_,line.c_str(),line.length(),0);
-  return (error > 0);
+  send(socket_,line.c_str(),line.length(),0);
 }
 
-std::string XineRemote::doStringCommand(const string& command, string arg1, string arg2,bool trim) {
+std::string MplayerRemote::doStringCommand(const string& command, string arg1, string arg2,bool trim) {
   string result;
 
   char buffer[257];
-  int error=0;
+  int error=-1;
 
   if (doVoidCommand(command,arg1,arg2)) {
-    error=myRecv(socket_,buffer,256,3);
+    error=myRecv(socket_,buffer,256,2);
   }
 
   if (error<0) {
-    perror("Error while receiving (string)");
+    perror("Error while receiving");
     return "";
   }
   if (error>0) {
@@ -155,14 +147,12 @@ std::string XineRemote::doStringCommand(const string& command, string arg1, stri
   
 }
 
-int XineRemote::doIntCommand(const string& command, string arg1, string arg2) {
+int MplayerRemote::doIntCommand(const string& command, string arg1, string arg2) {
   
   string line;
   int result=-1;
 
   line=doStringCommand(command,arg1,arg2,false);
-
-  DBG(std::cout << ">>>" << line << "<<<" << std::endl);
 
   sscanf(line.c_str(),"%i",&result);
 
@@ -170,36 +160,32 @@ int XineRemote::doIntCommand(const string& command, string arg1, string arg2) {
 }
 
 
-void XineRemote::toggleGUI() {
-  doVoidCommand("gui","panel");
-}
-
-int XineRemote::getPosition() {
+int MplayerRemote::getPosition() {
   return doIntCommand("get","position");
 }
 
 
-int XineRemote::getLength() {
+int MplayerRemote::getLength() {
   return doIntCommand("get","length");
 }
 
-int XineRemote::getChapter() {
+int MplayerRemote::getChapter() {
   return doIntCommand("get","dvd","chapter");
 }
 
-int XineRemote::getChapterCount() {
+int MplayerRemote::getChapterCount() {
   return doIntCommand("get","dvd","chapter_count");
 }
 
-int XineRemote::getDVDTitle() {
+int MplayerRemote::getDVDTitle() {
   return doIntCommand("get","dvd","title");
 }
 
-int XineRemote::getDVDTitleCount() {
+int MplayerRemote::getDVDTitleCount() {
   return doIntCommand("get","dvd","title_count");
 }
 
-string XineRemote::getTitle() {
+string MplayerRemote::getTitle() {
   string result=doStringCommand("get","title");
 
   if (result=="(null)") {
@@ -213,7 +199,7 @@ string XineRemote::getTitle() {
     error=myRecv(socket_,buffer,256);
 
     if (error<0) {
-      perror("Error while receiving (title)");
+      perror("Error while receiving");
       return "";
     }
     if (error>0) {
@@ -253,7 +239,7 @@ string XineRemote::getTitle() {
   return result;
 }
 
-string XineRemote::getArtist() {
+string MplayerRemote::getArtist() {
   string result=doStringCommand("get","artist");
   if (result == "(null)") {
     result="";
@@ -261,15 +247,15 @@ string XineRemote::getArtist() {
 	return result;
 }
 
-string XineRemote::getStatus() {
+string MplayerRemote::getStatus() {
 	return doStringCommand("get","status");
 }
 
-string XineRemote::getSpeed() {
+string MplayerRemote::getSpeed() {
 	return doStringCommand("get","speed");
 }
 
-int XineRemote::getCDTrack() {
+int MplayerRemote::getCDTrack() {
   int track=0;
 
   string result="";
@@ -284,7 +270,7 @@ int XineRemote::getCDTrack() {
     error=myRecv(socket_,buffer,256);
 
     if (error<0) {
-      perror("Error while receiving (Track)");
+      perror("Error while receiving");
       return error;
     }
     if (error>0) {
@@ -321,9 +307,4 @@ int XineRemote::getCDTrack() {
     }
 
   return track;
-}
-
-bool XineRemote::quit() {
-	doVoidCommand("halt");
-  return true;
 }

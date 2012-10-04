@@ -1,10 +1,11 @@
+#include "defines.h"
+
 #include <iostream>
 #include <string>
 
 #include <fcntl.h>
-#include <stdio.h>
 
-#include "mediaCenter_output.h"
+#include "mediaCenter_xine.h"
 
 #include "xineRemote.h"
 #include "tvcontrol.h"
@@ -21,10 +22,14 @@ using std::string;
 #define DBG(x)
 #endif
 
-MediaCenter_Output::MediaCenter_Output(): pid_(-1),data(NULL) {
+MediaCenter_output * newApp() {
+  return new MediaCenter_xine();
 }
 
-MediaCenter_Output::~MediaCenter_Output() {
+MediaCenter_xine::MediaCenter_xine() {
+}
+
+MediaCenter_xine::~MediaCenter_xine() {
 }
 
 bool waitForChild;
@@ -33,7 +38,7 @@ void childReady(int=0) {
   waitForChild=false;
 }
 
-int MediaCenter_Output::startApplication() {
+int MediaCenter_xine::startApplication() {
 
   const char * argv [8];
 
@@ -117,56 +122,56 @@ int MediaCenter_Output::startApplication() {
   return pid_;
 }
 
-int MediaCenter_Output::getTrack() {
+int MediaCenter_xine::getTrack() {
   int result=0;
   result=XineRemote::getDVDTitle();
   return result;
 }
 
-int MediaCenter_Output::getTotalTracks() {
+int MediaCenter_xine::getTotalTracks() {
   int result=0;
   result=XineRemote::getDVDTitleCount();
   return result;
 }
 
-int MediaCenter_Output::getChapter() {
+int MediaCenter_xine::getChapter() {
   int result=0;
   result=XineRemote::getChapter();
   return result;
 }
 
-int MediaCenter_Output::getTotalChapters() {
+int MediaCenter_xine::getTotalChapters() {
   int result=0;
   result=XineRemote::getChapterCount();
   return result;
 }
 
-int MediaCenter_Output::getTime() {
+int MediaCenter_xine::getTime() {
   int result=0;
   result=XineRemote::getPosition()/1000;
   
   return result;
 }
 
-int MediaCenter_Output::getTotalTime() {
+int MediaCenter_xine::getTotalTime() {
   int result=0;
   result=XineRemote::getLength()/1000;
   return result;
 }
 
-string MediaCenter_Output::getTitle() {
+string MediaCenter_xine::getTitle() {
   string result="";
   result=XineRemote::getTitle();
   return result;
 }
 
-string MediaCenter_Output::getArtist() {
+string MediaCenter_xine::getArtist() {
   string result="";
   result=XineRemote::getArtist();
   return result;
 }
 
-string MediaCenter_Output::getChannel() {
+string MediaCenter_xine::getChannel() {
   string result="No Channel";
 
   result=TV::getCurrentChannel(filename_.c_str());
@@ -174,12 +179,12 @@ string MediaCenter_Output::getChannel() {
   return result;
 }
 
-string MediaCenter_Output::setChannel(const string & newChannel) {
+string MediaCenter_xine::setChannel(const string & newChannel) {
 
   return getChannel();
 }
 
-string MediaCenter_Output::channelUp(int step) {
+string MediaCenter_xine::channelUp(int step) {
   if (type_=="TV") {
     const char * device=filename_.c_str();
     TV::setChannel(TV::getCurrentChannelNum(device)+step,device);
@@ -187,16 +192,23 @@ string MediaCenter_Output::channelUp(int step) {
   return getChannel();
 }
 
-string MediaCenter_Output::channelDown(int step) {
+string MediaCenter_xine::channelDown(int step) {
   if (type_=="TV") {
     const char * device=filename_.c_str();
     TV::setChannel(TV::getCurrentChannelNum(device)-step,device);
   }
   return getChannel();
 }
-bool MediaCenter_Output::isPaused() {
+bool MediaCenter_xine::isPaused() {
   bool result=false;
   result=(XineRemote::getSpeed()=="XINE_SPEED_PAUSE");
   return result;
+}
+
+void MediaCenter_xine::exit() {
+  XineRemote::quit();
+
+  usleep(100000);
+  MediaCenter_output::exit();
 }
 

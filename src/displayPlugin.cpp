@@ -1,9 +1,9 @@
+#include "defines.h"
 #include "config.h"
 #include "displayPlugin.h"
 
 
 #include <string>
-#include <stdio.h>
 
 using Config::plugins;
 using std::string;

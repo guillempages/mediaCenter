@@ -1,5 +1,5 @@
-#ifndef mediaCenter_stub_h
-#define mediaCenter_stub_h
+#ifndef mediaCenter_output_h
+#define mediaCenter_output_h
 
 #include <string>
 #include <signal.h>
@@ -8,31 +8,39 @@ extern bool end;
 
 void term(int result=0);
 
-class MediaCenter_Output {
+class MediaCenter_output {
 public:
-  MediaCenter_Output();
+  MediaCenter_output();
 
-  ~MediaCenter_Output();
+  virtual ~MediaCenter_output();
 
-  int startApplication(); 
+  virtual int startApplication(); 
 
-  std::string getTitle();
-  std::string getArtist();
+  virtual std::string getTitle();
+  virtual std::string getArtist();
 
-  std::string getChannel(); //only for TV; but must be implemented anyway
-  std::string setChannel(const std::string & newChannel);
-  std::string channelUp(int step=1);
-  std::string channelDown(int step=1);
+  virtual std::string getChannel(); //only for TV; but must be implemented anyway
+  virtual std::string setChannel(const std::string & newChannel);
+  virtual std::string channelUp(int step=1);
+  virtual std::string channelDown(int step=1);
 
-  int getTime();
-  int getTotalTime();
-  int getTrack();
-  int getTotalTracks();
-  int getChapter();
-  int getTotalChapters();
+  virtual int getTime();
+  virtual int getTotalTime();
+  virtual int getTrack();
+  virtual int getTotalTracks();
+  virtual int getChapter();
+  virtual int getTotalChapters();
 
 
-  bool isPaused();
+  virtual void play() {};
+  virtual void pause() {};
+  virtual void stop() {};
+  virtual void next() {};
+  virtual void previous() {};
+
+  virtual bool isPaused();
+
+  virtual void exit();
   /**
    * Implemented inline below
    */
@@ -45,7 +53,6 @@ public:
 
   int getPID();
 
-  void stop();
 
 protected:
   /**
@@ -61,36 +68,34 @@ protected:
   void * data; //user data. Use at own discretion.
 };
 
-inline std::string MediaCenter_Output::getType() {
+inline std::string MediaCenter_output::getType() {
   return type_;
 }
-inline void MediaCenter_Output::setType(const std::string& value) {
+inline void MediaCenter_output::setType(const std::string& value) {
   type_=value;
 }
 
-inline std::string MediaCenter_Output::getFilename() {
+inline std::string MediaCenter_output::getFilename() {
   return filename_;
 }
-inline void MediaCenter_Output::setFilename(const std::string& value) {
+inline void MediaCenter_output::setFilename(const std::string& value) {
   filename_=value;
 }
 
-inline std::string MediaCenter_Output::getConfig() {
+inline std::string MediaCenter_output::getConfig() {
   return config_;
 }
-inline void MediaCenter_Output::setConfig(const std::string& value) {
+inline void MediaCenter_output::setConfig(const std::string& value) {
   config_=value;
 }
 
-inline int MediaCenter_Output::getPID() {
+inline int MediaCenter_output::getPID() {
   return pid_;
 }
 
-inline void MediaCenter_Output::stop() {
-  if (pid_ > 0) {
-    kill(pid_,SIGTERM);
-  }
-}
+inline int MediaCenter_output::startApplication () {};
+
+extern MediaCenter_output* newApp();
 
 #endif
 
