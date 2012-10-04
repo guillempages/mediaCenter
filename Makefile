@@ -1,7 +1,9 @@
 PROTOCOL=udp
 CXXFLAGS += -DDEBUG
 
-all: mediaCenter_lirc mediaCenter_xmms mediaCenter_xine mediaCenter_imon mediaCenter mediaCenter_menu
+BINARIES=mediaCenter_lirc mediaCenter_xmms mediaCenter_xine mediaCenter_imon mediaCenter mediaCenter_menu
+
+all: $(BINARIES)
 
 mediaCenter_lirc: mediaCenter_lirc.o
 	g++ $(LDFLAGS) -o mediaCenter_lirc -llirc_client mediaCenter_lirc.o
@@ -71,5 +73,8 @@ config.o: config.cpp
 
 clean:
 	rm -f *.o
+
+distclean: clean
+	rm -f $(BINARIES)
 
 .PHONY: clean
