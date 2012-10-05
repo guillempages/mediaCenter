@@ -138,7 +138,7 @@ Plugins & getPlugins(const std::string & _path) {
     path+="/.mediaCenter";
   }
 
-  ifstream file((path+"/plugins").c_str());
+    ifstream file((path + "/" + "mediaCenter.conf").c_str());
 
 	string name;
 	string strtmp;
@@ -149,7 +149,7 @@ Plugins & getPlugins(const std::string & _path) {
   Config::PluginConf * currentPlugin=&dummyPlugin;
 
   if (file.fail()) {
-    cerr << "Could not open config file " << path << "/plugins" <<  endl;
+        cerr << "Could not open config file " << path << "/mediaCenter.conf" <<  endl;
   }
 
 	while (file.good()) {
@@ -279,6 +279,10 @@ void configInit(const std::string & path)
   plugins.record.type="Record";
   plugins.record.path="mediaCenter_record";
 
+    //Read the global configuration if it exists
+    getPlugins("/etc");
+
+    //And override the corresponding fields from the user's config
   getPlugins(path);
 
   DBG(cout << "Plugins: " << endl << plugins << endl);
