@@ -1,6 +1,5 @@
 #include "defines.h"
 
-#include <GL/glu.h>
 #include <GL/glut.h>
 #include <iostream>
 #include <sstream>
@@ -94,7 +93,7 @@ void showMenu(vector<string> menu, int pos=-1) {
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glLoadIdentity();
-    gluOrtho2D(0.0, width, 0.0, height);
+    glOrtho(0.0, width, 0.0, height, -1.0, 1.0);
 
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
