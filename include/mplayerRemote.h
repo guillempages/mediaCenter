@@ -4,7 +4,7 @@
 #include <string>
 
 class MplayerRemote {
-  public:
+public:
     MplayerRemote(std::string address="localhost",int port=6789);
     ~MplayerRemote();
 
@@ -22,7 +22,7 @@ class MplayerRemote {
     static std::string getStatus();
     static std::string getSpeed();
 
-  protected:
+protected:
     static int socket_;
     static int initSocket(const std::string& address="localhost", int port=6789);
     static std::string doStringCommand(const std::string& command, std::string arg1="", std::string arg2="",bool trim=true);

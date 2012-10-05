@@ -4,7 +4,7 @@
 #include <string>
 
 class XineRemote {
-  public:
+public:
     XineRemote(std::string address="localhost",int port=6789);
     ~XineRemote();
 
@@ -22,10 +22,10 @@ class XineRemote {
     static std::string getArtist();
     static std::string getStatus();
     static std::string getSpeed();
-  
+
     static bool quit();
 
-  protected:
+protected:
     static int socket_;
     static int initSocket(const std::string& address="localhost", int port=6789);
     static std::string doStringCommand(const std::string& command, std::string arg1="", std::string arg2="",bool trim=true);

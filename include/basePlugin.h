@@ -6,52 +6,52 @@
 #include "config.h"
 
 namespace Config {
-  class PluginConf;
+class PluginConf;
 };
 
 class Plugin {
 
- public:
-  Plugin();
-  virtual ~Plugin();
+public:
+    Plugin();
+    virtual ~Plugin();
 
-  virtual bool start(const Config::PluginConf& plugin);
-  virtual bool stop();
+    virtual bool start(const Config::PluginConf& plugin);
+    virtual bool stop();
 
 
-  int getPID() const;
-  void setPort(int port);
-  int getPort() const;
-  int send(const std::string& msg) const;
-  int alive();
+    int getPID() const;
+    void setPort(int port);
+    int getPort() const;
+    int send(const std::string& msg) const;
+    int alive();
 
- protected:
-  int PID_;
-  int port_;
-  int exec(const std::string &prog,const char ** argv);
+protected:
+    int PID_;
+    int port_;
+    int exec(const std::string &prog,const char ** argv);
 };
 
 inline Plugin::Plugin() : PID_(-1),port_(0) {
 }
 
 inline Plugin::~Plugin() {
-  stop();
+    stop();
 }
 
 inline int Plugin::getPID() const {
-  return PID_;
+    return PID_;
 }
 
 inline bool Plugin::start(const Config::PluginConf&) {
-  return true;
+    return true;
 }
 
 inline void Plugin::setPort(int _port) {
-  port_=_port;
+    port_=_port;
 }
 
 inline int Plugin::getPort() const {
-  return port_;
+    return port_;
 }
 
 #endif

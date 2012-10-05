@@ -4,18 +4,18 @@
 #include "basePlugin.h"
 
 namespace Config {
-  class DisplayPluginConf;
+class DisplayPluginConf;
 }
 
 class DisplayPlugin : public Plugin {
 
-  public:
+public:
     DisplayPlugin();
     ~DisplayPlugin();
 
-   virtual bool start(const Config::DisplayPluginConf & plugin);
+    virtual bool start(const Config::DisplayPluginConf & plugin);
 
-  protected:
+protected:
 };
 
 #endif

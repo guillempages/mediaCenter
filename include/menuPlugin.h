@@ -4,18 +4,18 @@
 #include "basePlugin.h"
 
 namespace Config {
-  class MenuPluginConf;
+class MenuPluginConf;
 }
 
 class MenuPlugin : public Plugin {
 
-  public:
+public:
     MenuPlugin();
     ~MenuPlugin();
 
-   virtual bool start(const Config::MenuPluginConf & plugin);
+    virtual bool start(const Config::MenuPluginConf & plugin);
 
-  protected:
+protected:
 };
 
 #endif

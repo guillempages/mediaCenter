@@ -4,18 +4,18 @@
 #include "basePlugin.h"
 
 namespace Config {
-  class RecordPluginConf;
+class RecordPluginConf;
 }
 
 class RecordPlugin : public Plugin {
 
-  public:
+public:
     RecordPlugin();
     ~RecordPlugin();
 
-   virtual bool start(const Config::RecordPluginConf & plugin);
+    virtual bool start(const Config::RecordPluginConf & plugin);
 
-  protected:
+protected:
 };
 
 #endif

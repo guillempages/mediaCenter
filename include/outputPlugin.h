@@ -4,19 +4,19 @@
 #include "basePlugin.h"
 
 namespace Config {
-  class OutputPluginConf;
+class OutputPluginConf;
 }
 
 class OutputPlugin : public Plugin {
 
-  public:
+public:
     OutputPlugin();
     ~OutputPlugin();
 
-   virtual bool start(const Config::OutputPluginConf & plugin);
-   virtual bool stop();
+    virtual bool start(const Config::OutputPluginConf & plugin);
+    virtual bool stop();
 
-  protected:
+protected:
 };
 
 #endif

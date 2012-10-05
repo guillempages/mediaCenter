@@ -4,18 +4,18 @@
 #include "basePlugin.h"
 
 namespace Config {
-  class RemotePluginConf;
+class RemotePluginConf;
 }
 
 class RemotePlugin : public Plugin {
 
- public:
-  RemotePlugin();
-  ~RemotePlugin();
+public:
+    RemotePlugin();
+    ~RemotePlugin();
 
-  virtual bool start(const Config::RemotePluginConf & plugin);
+    virtual bool start(const Config::RemotePluginConf & plugin);
 
- protected:
+protected:
 };
 
 #endif

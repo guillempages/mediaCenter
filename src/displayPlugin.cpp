@@ -17,34 +17,34 @@ DisplayPlugin::~DisplayPlugin() {
 
 bool DisplayPlugin::start(const Config::DisplayPluginConf& plugin) {
 
-  if (PID_) 
-    stop();
-  
-  port_=plugin.port;
+    if (PID_)
+        stop();
 
-  char port[10];
-  const char * argv[6];
-  sprintf(port,"%i",port_);
-  
-  std::string basename=plugin.path;
+    port_=plugin.port;
 
-  int pos=basename.rfind("/");
-  if (pos!=string::npos) {
-    basename=basename.substr(pos+1);
-  }
-  argv[0]=basename.c_str();
-  argv[1]="-s";
-  argv[2]=plugin.server.c_str();
-  argv[3]="-p";
-  argv[4]=port;
-  argv[5]=NULL;
+    char port[10];
+    const char * argv[6];
+    sprintf(port,"%i",port_);
+
+    std::string basename=plugin.path;
+
+    int pos=basename.rfind("/");
+    if (pos!=string::npos) {
+        basename=basename.substr(pos+1);
+    }
+    argv[0]=basename.c_str();
+    argv[1]="-s";
+    argv[2]=plugin.server.c_str();
+    argv[3]="-p";
+    argv[4]=port;
+    argv[5]=NULL;
 
 
-  PID_=exec(plugin.path,argv);
-  if (PID_<=0) {
-    perror("DisplayPlugin");
-    return false;
-  }
+    PID_=exec(plugin.path,argv);
+    if (PID_<=0) {
+        perror("DisplayPlugin");
+        return false;
+    }
 
-  return true;
+    return true;
 }
