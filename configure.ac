@@ -168,6 +168,8 @@ AS_IF([test "x$GLMENU" == x],
        AC_SUBST([WITH_GLMENU],[yes])
     )
 
+AC_SUBST([DUMMY],["mediaCenter_dummy${EXEEXT}"])
+
 AS_IF([test "x$enable_debug" == xyes],
   AC_DEFINE([DEBUG], [1], [Enable/disable debugging output])
 )

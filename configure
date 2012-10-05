@@ -609,6 +609,7 @@ LEGACY_FALSE
 LEGACY_TRUE
 DEBUG_FALSE
 DEBUG_TRUE
+DUMMY
 WITH_GLMENU
 GLMENU
 WITH_LIRC
@@ -6007,6 +6008,9 @@ else
 
 
 fi
+
+DUMMY="mediaCenter_dummy${EXEEXT}"
+
 
 if test "x$enable_debug" == xyes; then :
 
