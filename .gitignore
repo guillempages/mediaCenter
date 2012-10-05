@@ -1,13 +1,16 @@
 *.o
 autom4te.cache/
 bin/
+.deps/
+
+etc/mediaCenter.conf
+
 Makefile
 config.log
 config.status
 include/defines.h
 include/stamp-h1
 libtool
-src/.deps/
 
 mediaCenter
 mediaCenter_glmenu

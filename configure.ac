@@ -2,12 +2,11 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(mediaCenter, 0.4.0, guillempages@hotmail.com)
-AM_INIT_AUTOMAKE(mediaCenter, 0.4.0)
+AC_INIT(mediaCenter, 0.4.1, guillempages@hotmail.com)
+AM_INIT_AUTOMAKE(mediaCenter, 0.4.1)
 
 AM_CONFIG_HEADER(include/defines.h)
 AC_LANG_CPLUSPLUS
-AM_PROG_LIBTOOL
 
 AC_CONFIG_SRCDIR([src/])
 #AC_CONFIG_HEADERS([include/defines.h])
@@ -173,6 +172,8 @@ AS_IF([test "x$enable_debug" == xyes],
   AC_DEFINE([DEBUG], [1], [Enable/disable debugging output])
 )
 
+AM_CONDITIONAL([DEBUG], [test "x$enable_debug == xyes"])
+AM_CONDITIONAL([LEGACY], [test "x$enable_legacy == xyes"])
 
 AC_MSG_NOTICE([-----------------------------------])
 AC_MSG_NOTICE([  Summary:])
@@ -187,5 +188,5 @@ AC_MSG_NOTICE([Compiling Legacy:       $ENABLE_LEGACY])
 AC_MSG_NOTICE([])
 AC_MSG_NOTICE([-----------------------------------])
 
-AC_CONFIG_FILES([Makefile src/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile etc/Makefile])
 AC_OUTPUT

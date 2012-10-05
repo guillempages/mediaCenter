@@ -1,3 +1,5 @@
+0.4.1:  Autogenerate config file
+
 0.4:    Rewrote the core module (mediaCenter / mediaCenter_main) with a State Machine
 	Add Next/Prev handling to glmenu plugin
         Disable legacy application by default

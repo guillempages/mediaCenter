@@ -1,4 +1,4 @@
-SUBDIRS=src
+SUBDIRS=src etc
 AUTOMAKE_OPTIONS = foreign no-dist-gzip dist-bzip2
 EXTRA_DIST = \
 		include/basePlugin.h \
