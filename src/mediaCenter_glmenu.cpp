@@ -1,5 +1,6 @@
 #include "defines.h"
 
+#include <GL/glu.h>
 #include <GL/glut.h>
 #include <iostream>
 #include <sstream>
@@ -80,16 +81,27 @@ int getTextWidth(const char* text) {
 }
 
 void showMenu(vector<string> menu, int pos=-1) {
-    double pos0, inc;
+    int pos0, inc;
     int i,start;
+    int maxlines;
 
-    inc=0.1;
+    inc = 25; //Max font size + 1
+    pos0 = height - inc;
+    maxlines = height / inc;
 
-    pos0=1;
+    start=pos-maxlines/2+menu.size();
 
-    start=pos-9+menu.size();
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0.0, width, 0.0, height);
 
-    if (menu.size()<19) {
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+
+    if (menu.size() < maxlines) {
         for (i=0; i<menu.size(); i++) {
             if (i!=pos%menu.size()) {
                 glColor3f(0.6,0.9,0.7);
@@ -98,13 +110,12 @@ void showMenu(vector<string> menu, int pos=-1) {
                 glColor3f(0.9,0.15,0.2);
                 font=GLUT_BITMAP_TIMES_ROMAN_24;
             }
-            //      writeText(-0.1,pos0-(i)*inc,menu[i].c_str());
-            writeText(-0.06 - 0.0013*getTextWidth(menu[i%menu.size()].c_str()),pos0-(i-start)*inc,menu[i%menu.size()].c_str());
+            writeText((width - getTextWidth(menu[i%menu.size()].c_str())) / 2, pos0-(i-start)*inc,menu[i%menu.size()].c_str());
         }
 
     } else {
 
-        for (i=start; (i<menu.size()||menu.size()>=19) && i<start+19; i++) {
+        for (i=start; (i<menu.size() || menu.size() >= maxlines) && i < start + maxlines; i++) {
             if (i%menu.size()!=pos%menu.size()) {
                 glColor3f(0.6,0.9,0.7);
                 font=GLUT_BITMAP_HELVETICA_18;
@@ -112,9 +123,16 @@ void showMenu(vector<string> menu, int pos=-1) {
                 glColor3f(0.9,0.15,0.2);
                 font=GLUT_BITMAP_TIMES_ROMAN_24;
             }
-            writeText(-0.06 - 0.0013*getTextWidth(menu[i%menu.size()].c_str()),pos0-(i-start)*inc,menu[i%menu.size()].c_str());
+            writeText((width - getTextWidth(menu[i%menu.size()].c_str())) / 2, pos0-(i-start)*inc,menu[i%menu.size()].c_str());
         }
     }
+
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+
 }
 
 void displayFunction(void) {
@@ -158,6 +176,8 @@ my_reshape(int w, int h)
 {
     width = w;
     height = h;
+
+    glViewport(0,0,w,h);
 }
 
 void
@@ -297,8 +317,7 @@ vector<string> listDirectory(const string& directory) {
         entry=readdir(films);
     }
     std::sort(menuFiles.begin(),menuFiles.end());
-    sort(result.begin(),result.end());
-
+    std::sort(result.begin(),result.end());
 }
 
 int initGlutWindow(int argc, char* argv[]) {
@@ -306,7 +325,6 @@ int initGlutWindow(int argc, char* argv[]) {
 
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
     glutInitWindowSize(750,600);
-    glutInitWindowPosition(20,0);
 
     DBG(cout << "glutInit..." << flush);
     glutInit(&argc,argv);
@@ -317,7 +335,6 @@ int initGlutWindow(int argc, char* argv[]) {
 
     glutCreateWindow("window");
 
-    //  glutReshapeWindow(750,600);
     if (! windowed) {
         glutFullScreen();
     }

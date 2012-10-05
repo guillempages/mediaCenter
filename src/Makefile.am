@@ -14,7 +14,7 @@ mediaCenter_SOURCES = mediaCenter_main.cpp hsm.cpp config.cpp basePlugin.cpp rem
 mediaCenter_dummy_SOURCES = mediaCenter_dummy.cpp
 
 mediaCenter_glmenu_SOURCES = mediaCenter_glmenu.cpp
-mediaCenter_glmenu_LDADD=-lglut
+mediaCenter_glmenu_LDADD=-lglut -lGLU
 
 mediaCenter_lirc_SOURCES=mediaCenter_lirc.cpp
 mediaCenter_lirc_LDADD=-llirc_client

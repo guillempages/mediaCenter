@@ -1,3 +1,5 @@
+Add check for libGLU to configure.ac
+
 display plugin does not always die as expected
   -music -> movie (dies) -> idle (does't die)
 
