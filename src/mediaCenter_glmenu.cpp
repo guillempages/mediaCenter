@@ -37,6 +37,7 @@ void * font;
 
 int width, height;
 int pos=0;
+bool windowed = false;
 vector<string> menu,menuFiles;
 
 int sock=-1;
@@ -317,7 +318,9 @@ int initGlutWindow(int argc, char* argv[]) {
     glutCreateWindow("window");
 
     //  glutReshapeWindow(750,600);
-    glutFullScreen();
+    if (! windowed) {
+        glutFullScreen();
+    }
 
     glutReshapeFunc(my_reshape);
     glutKeyboardFunc(my_handle_key);
@@ -336,7 +339,7 @@ int initGlutWindow(int argc, char* argv[]) {
 
 void usage(string progName) {
     std::cerr << "Usage:" << endl
-              << "  " << progName << " [-p local port] [-s server] [-r remote port] [-f dir] [-t type]" << endl;
+              << "  " << progName << " [-p local port] [-s server] [-r remote port] [-f dir] [-t type] [-w]" << endl;
 }
 
 int main(int argc, char * argv[]) {
@@ -367,7 +370,7 @@ int main(int argc, char * argv[]) {
     const char * basename=programName.c_str();
 
     int optc=0;
-    while ((optc=getopt(argc,argv,"r:p:s:f:t:")) != -1 ) {
+    while ((optc=getopt(argc,argv,"r:p:s:f:t:w")) != -1 ) {
         switch (optc) {
         case 'p': // port
             port=atoi(optarg);
@@ -383,6 +386,9 @@ int main(int argc, char * argv[]) {
             break;
         case 't': // type
             mediaType=optarg;
+            break;
+        case 'w': // windowed
+            windowed = true;
             break;
         default:
             usage(basename);
