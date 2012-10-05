@@ -5,38 +5,62 @@ sysconf_DATA=mediaCenter.conf
 mediaCenter.conf: Makefile
 	echo "# Configuration file for MediaCenter" >$@
 	echo "" >>$@
+	echo "[remote]" >> $@; 
 	if test "x$(WITH_LIRC)" == "xyes"; then \
-	  echo "[remote]" >> $@; \
 	  echo "path = $(bindir)/$(LIRC)" >> $@; \
-	  echo "name = lircer" >> $@; \
-	  echo "#server = localhost" >> $@; \
-	  echo "" >>$@; \
+	else \
+	  echo "path = $(bindir)/$(DUMMY)" >> $@; \
 	fi
+	echo "name = lircer" >> $@;
+	echo "#server = localhost" >> $@;
+	echo "" >>$@;
+	
+	echo "[display]" >> $@;
 	if test "x$(WITH_IMON)" == "xyes"; then \
-	  echo "[display]" >> $@; \
 	  echo "path = $(bindir)/$(IMON)" >> $@; \
-	  echo "" >>$@; \
+	else \
+	  echo "path = $(bindir)/$(DUMMY)" >> $@; \
 	fi
+	echo "" >>$@;
+	
+	echo "[DVD]" >> $@;
 	if test "x$(WITH_XINE)" == "xyes"; then \
-	  echo "[DVD]" >> $@; \
 	  echo "path = $(bindir)/$(XINE)" >> $@; \
-	  echo "file = /dev/dvd" >> $@; \
-	  echo "" >>$@; \
-	  echo "[CD]" >> $@; \
-	  echo "path = $(bindir)/$(XINE)" >> $@; \
-	  echo "" >>$@; \
-	  echo "[Movie]" >> $@; \
-	  echo "path = $(bindir)/$(XINE)" >> $@; \
-	  echo "" >>$@; \
+	else \
+	  echo "path = $(bindir)/$(DUMMY)" >> $@; \
 	fi
+	echo "file = /dev/dvd" >> $@;
+	echo "" >>$@;
+	
+	echo "[CD]" >> $@;
+	if test "x$(WITH_XINE)" == "xyes"; then \
+	  echo "path = $(bindir)/$(XINE)" >> $@; \
+	else \
+	  echo "path = $(bindir)/$(DUMMY)" >> $@; \
+	fi
+	echo "" >>$@;
+	
+	echo "[Movie]" >> $@;
+	if test "x$(WITH_XINE)" == "xyes"; then \
+	  echo "path = $(bindir)/$(XINE)" >> $@; \
+	else \
+	  echo "path = $(bindir)/$(DUMMY)" >> $@; \
+	fi
+	echo "" >>$@;
+	
+	echo "[MovieMenu]" >> $@;
 	if test "x$(WITH_GLMENU)" == "xyes"; then \
-	  echo "[MovieMenu]" >> $@; \
 	  echo "path = $(bindir)/$(GLMENU)" >> $@; \
-	  echo "file = /films" >>$@; \
-	  echo "" >>$@; \
+	else \
+	  echo "path = $(bindir)/$(DUMMY)" >> $@; \
 	fi
+	echo "file = /films" >>$@;
+	echo "" >>$@;
+	
+	echo "[Music]" >> $@;
 	if test "x$(WITH_XMMS)" == "xyes"; then \
-	  echo "[Music]" >> $@; \
 	  echo "path = $(bindir)/$(XMMS)" >> $@; \
-	  echo "" >>$@; \
+	else \
+	  echo "path = $(bindir)/$(DUMMY)" >> $@; \
 	fi
+	echo "" >>$@;
