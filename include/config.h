@@ -27,9 +27,10 @@ public:
 
 class MonitorPluginConf : public PluginConf {
 public:
-    MonitorPluginConf(const std::string& type="monitor", const std::string& path="mediaCenter_cdMonitor",const std::string & device="", const std::string & mountPoint="");
+    MonitorPluginConf(const std::string& type="monitor", const std::string& path="mediaCenter_cdMonitor",const std::string & device="", const std::string & mountPoint="", const std::string & server="localhost");
     std::string device;
     std::string mountPoint;
+    std::string server;
 };
 
 class OutputPluginConf : public PluginConf {

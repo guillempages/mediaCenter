@@ -39,10 +39,11 @@ RemotePluginConf::RemotePluginConf(const string &_type, const string &_path, con
     class_="Remote";
 }
 
-MonitorPluginConf::MonitorPluginConf(const string &_type, const string & _path,const string & _device, const string & _mountPoint) :
+MonitorPluginConf::MonitorPluginConf(const string &_type, const string & _path,const string & _device, const string & _mountPoint,const string & _server) :
     PluginConf(_type, _path),
     device(_device),
-    mountPoint(_mountPoint)
+    mountPoint(_mountPoint),
+    server(_server)
 {
     class_="Monitor";
 }
@@ -102,7 +103,8 @@ std::ostream & operator<<(std::ostream & ostr, const Config::RemotePluginConf& p
 std::ostream & operator<<(std::ostream & ostr, const Config::MonitorPluginConf& plugin) {
     ostr << (const Config::PluginConf&)plugin
          << "Device: " << plugin.device << endl
-         << "MountPoint: " << plugin.mountPoint << endl;
+         << "MountPoint: " << plugin.mountPoint << endl
+         << "Server: " << plugin.server << endl;
     return ostr;
 }
 
