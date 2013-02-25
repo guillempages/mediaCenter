@@ -5,7 +5,7 @@ sysconf_DATA=mediaCenter.conf
 mediaCenter.conf: Makefile
 	echo "# Configuration file for MediaCenter" >$@
 	echo "" >>$@
-	echo "[remote]" >> $@; 
+	echo "[Remote]" >> $@;
 	if test "x$(WITH_LIRC)" == "xyes"; then \
 	  echo "path = $(bindir)/$(LIRC)" >> $@; \
 	else \
@@ -15,7 +15,13 @@ mediaCenter.conf: Makefile
 	echo "#server = localhost" >> $@;
 	echo "" >>$@;
 	
-	echo "[display]" >> $@;
+	echo "[Monitor]" >> $@;
+	echo "path = $(bindir)/mediaCenter_cdMonitor" >> $@;
+	echo "file = /dev/dvd" >> $@;
+	echo "mountPoint = /media/cdrom" >> $@;
+	echo "" >>$@;
+	
+	echo "[Display]" >> $@;
 	if test "x$(WITH_IMON)" == "xyes"; then \
 	  echo "path = $(bindir)/$(IMON)" >> $@; \
 	else \

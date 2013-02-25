@@ -25,6 +25,13 @@ public:
     std::string server;
 };
 
+class MonitorPluginConf : public PluginConf {
+public:
+    MonitorPluginConf(const std::string& type="monitor", const std::string& path="mediaCenter_cdMonitor",const std::string & device="", const std::string & mountPoint="");
+    std::string device;
+    std::string mountPoint;
+};
+
 class OutputPluginConf : public PluginConf {
 public:
     OutputPluginConf(const std::string& type="output", const std::string& path="mediaCenter_output",const std::string & file="");
@@ -54,6 +61,7 @@ public:
 class Plugins {
 public:
     RemotePluginConf remote;
+    MonitorPluginConf monitor;
     DisplayPluginConf display;
     OutputPluginConf dvd;
     OutputPluginConf cd;

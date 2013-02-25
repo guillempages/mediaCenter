@@ -39,6 +39,14 @@ RemotePluginConf::RemotePluginConf(const string &_type, const string &_path, con
     class_="Remote";
 }
 
+MonitorPluginConf::MonitorPluginConf(const string &_type, const string & _path,const string & _device, const string & _mountPoint) :
+    PluginConf(_type, _path),
+    device(_device),
+    mountPoint(_mountPoint)
+{
+    class_="Monitor";
+}
+
 OutputPluginConf::OutputPluginConf(const string &_type, const string & _path,const string & _file) :
     PluginConf(_type,_path),
     file(_file)
@@ -91,6 +99,13 @@ std::ostream & operator<<(std::ostream & ostr, const Config::RemotePluginConf& p
     return ostr;
 }
 
+std::ostream & operator<<(std::ostream & ostr, const Config::MonitorPluginConf& plugin) {
+    ostr << (const Config::PluginConf&)plugin
+         << "Device: " << plugin.device << endl
+         << "MountPoint: " << plugin.mountPoint << endl;
+    return ostr;
+}
+
 std::ostream & operator<<(std::ostream & ostr, const Config::OutputPluginConf& plugin) {
     ostr << (const Config::PluginConf&)plugin
          << "File: " << plugin.file << endl;
@@ -118,7 +133,19 @@ std::ostream & operator<<(std::ostream & ostr, const Config::RecordPluginConf& p
 }
 
 std::ostream & operator<<(std::ostream & ostr, const Config::Plugins& plugins) {
-    ostr << "Config path: " << plugins.path << endl << plugins.remote << plugins.display << plugins.tv << plugins.dvb << plugins.dvd << plugins.cd << plugins.music << plugins.movie << plugins.movieMenu << plugins.record;
+    ostr << "Config path: "
+        << plugins.path << endl
+        << plugins.remote
+        << plugins.monitor
+        << plugins.display
+        << plugins.tv
+        << plugins.dvb
+        << plugins.dvd
+        << plugins.cd
+        << plugins.music
+        << plugins.movie
+        << plugins.movieMenu
+        << plugins.record;
     return ostr;
 }
 
@@ -163,9 +190,11 @@ Plugins & getPlugins(const std::string & _path) {
             continue;
         }
 
-        if (name==trim(toLower("[remote]"))) {
+        if (name==trim(toLower("[Remote]"))) {
             currentPlugin=&plugins.remote;
-        } else if (name==trim(toLower("[display]"))) {
+        } else if (name==trim(toLower("[Monitor]"))) {
+            currentPlugin=&plugins.monitor;
+        } else if (name==trim(toLower("[Display]"))) {
             currentPlugin=&plugins.display;
         } else if (name==trim(toLower("[DVD]"))) {
             currentPlugin=&plugins.dvd;
@@ -234,6 +263,16 @@ Plugins & getPlugins(const std::string & _path) {
                 file >> ((Config::RecordPluginConf*)currentPlugin)->format;
             } else {
                 file >> strtmp;
+            }
+        } else if (name==trim(toLower("device"))) {
+            file >> strtmp;
+            if (currentPlugin->class_=="Monitor") {
+                file >> ((Config::MonitorPluginConf*)currentPlugin)->device;
+            }
+        } else if (name==trim(toLower("mountPoint"))) {
+            file >> strtmp;
+            if (currentPlugin->class_=="Monitor") {
+                file >> ((Config::MonitorPluginConf*)currentPlugin)->mountPoint;
             }
         } else {
             cout << "Not yet implemented: " << name << endl;
