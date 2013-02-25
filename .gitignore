@@ -13,6 +13,7 @@ include/stamp-h1
 libtool
 
 mediaCenter
+mediaCenter_cdMonitor
 mediaCenter_dummy
 mediaCenter_glmenu
 mediaCenter_imon

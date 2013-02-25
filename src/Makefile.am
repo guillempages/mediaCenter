@@ -1,7 +1,7 @@
 CPPFLAGS+=-I$(top_srcdir)/include
 AUTOMAKE_OPTIONS=foreign subdir-objects
 
-bin_PROGRAMS=mediaCenter $(DUMMY) $(OLD) $(LIRC) $(XMMS) $(XINE) $(MPLAYER) $(IMON) $(GLMENU)
+bin_PROGRAMS=mediaCenter mediaCenter_cdMonitor $(DUMMY) $(OLD) $(LIRC) $(XMMS) $(XINE) $(MPLAYER) $(IMON) $(GLMENU)
 EXTRA_PROGRAMS=mediaCenter_old mediaCenter_dummy mediaCenter_lirc mediaCenter_xmms mediaCenter_xine mediaCenter_mplayer mediaCenter_imon mediaCenter_glmenu
 
 #noinst_LIBRARIES=libmediaCenter_output.a
@@ -9,7 +9,7 @@ EXTRA_PROGRAMS=mediaCenter_old mediaCenter_dummy mediaCenter_lirc mediaCenter_xm
 
 mediaCenter_old_SOURCES = mediaCenter.cpp config.cpp basePlugin.cpp remotePlugin.cpp displayPlugin.cpp outputPlugin.cpp menuPlugin.cpp recorderPlugin.cpp
 
-mediaCenter_SOURCES = mediaCenter_main.cpp hsm.cpp config.cpp basePlugin.cpp remotePlugin.cpp displayPlugin.cpp outputPlugin.cpp menuPlugin.cpp recorderPlugin.cpp
+mediaCenter_SOURCES = mediaCenter_main.cpp hsm.cpp config.cpp basePlugin.cpp remotePlugin.cpp monitorPlugin.cpp displayPlugin.cpp outputPlugin.cpp menuPlugin.cpp recorderPlugin.cpp
 
 mediaCenter_dummy_SOURCES = mediaCenter_dummy.cpp
 
@@ -29,6 +29,8 @@ mediaCenter_xine_SOURCES=mediaCenter_xine.cpp mediaCenter_output.cpp tvcontrol.c
 
 mediaCenter_mplayer_SOURCES=mediaCenter_mplayer.cpp mediaCenter_output.cpp tvcontrol.cpp mplayerRemote.cpp
 #mediaCenter_mplayer_CPPFLAGS= $(AM_CPPFLAGS) -DPLUGIN=MediaCenter_mplayer
+
+mediaCenter_cdMonitor_SOURCES=mediaCenter_cdMonitor.cpp
 
 mediaCenter_imon_SOURCES=mediaCenter_imon.cpp
 mediaCenter_imon_LDADD=-llcd
