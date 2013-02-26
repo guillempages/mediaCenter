@@ -67,7 +67,10 @@ RETSIGTYPE term(int =0) {
 }
 
 inline void resetSound() {
-    system("amixer set 'IEC958 Playback AC97-SPSA' 0 >/dev/null");
+    int result = system("amixer set 'IEC958 Playback AC97-SPSA' 0 >/dev/null");
+    if (result <0 ) {
+        perror("Reset sound");
+    }
 }
 
 
