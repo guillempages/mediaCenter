@@ -3,6 +3,7 @@
 
 #include <string>
 #include <stdio.h>
+#include <unistd.h>
 
 using Config::plugins;
 using std::string;

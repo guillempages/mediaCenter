@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <stdio.h>
+#include <unistd.h>
 
 using Config::plugins;
 using std::string;
