@@ -93,6 +93,7 @@ void HSM_Quit::processEvent(const Event* event) {
     }
     default: {
         DBG(cout << "Nothing to do" << endl);
+        break;
     }
     }
 }
@@ -251,6 +252,12 @@ void HSM_Idle::processEvent(const Event* event) {
         this->hsm->changeState(stQuit);
         break;
     }
+    case evtMENU: {
+        HSM_State *nextState = new HSM_Menu(myHsm);
+        myHsm->changeState(nextState);
+        myHsm->receiveEvent(new_evtSTART(event->msg));
+        break;
+    }
     case evtMUSIC: {
         HSM_State *nextState = new HSM_Music(myHsm);
         myHsm->changeState(nextState);
@@ -326,6 +333,9 @@ void HSM_Menu::processEvent(const Event* event) {
         plugin = new MenuPlugin();
         if (type == "movie") {
             ((MenuPlugin*) plugin)->start(Config::plugins.movieMenu);
+        } else {
+            Event *myEvent = new_evtSTOP("No type selected");
+            myHsm->receiveEvent(myEvent);
         }
         break;
     }
@@ -443,6 +453,7 @@ void HSM_Music::processEvent(const Event* event) {
     }
     case evtIDLE:
     case evtMOVIE:
+    case evtMENU:
     case evtDVD:
     case evtCD:
     case evtTV:
@@ -520,6 +531,7 @@ void HSM_DVD::processEvent(const Event* event) {
         break;
     }
     case evtIDLE:
+    case evtMENU:
     case evtMOVIE:
     case evtMUSIC:
     case evtCD:
@@ -601,6 +613,7 @@ void HSM_CD::processEvent(const Event* event) {
         break;
     }
     case evtIDLE:
+    case evtMENU:
     case evtMOVIE:
     case evtMUSIC:
     case evtCD:
@@ -691,6 +704,7 @@ void HSM_Movie::processEvent(const Event* event) {
         break;
     }
     case evtIDLE:
+    case evtMENU:
     case evtMUSIC:
     case evtMOVIE:
     case evtDVD:
@@ -735,6 +749,8 @@ void parseCommand(HSM* hsm, string command, string parameter) {
 
     if (myCommand == "quit") {
         hsm->receiveEvent(new_evtQUIT());
+    } else if (myCommand == "menu") {
+        hsm->receiveEvent(new_evtMENU(parameter));
     } else if (myCommand == "music") {
         hsm->receiveEvent(new_evtMUSIC(parameter));
     } else if (myCommand == "movie") {
@@ -898,4 +914,3 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
-

@@ -18,6 +18,7 @@ enum Events {
     evtDVB,
     evtMUSIC,
     evtMOVIE,
+    evtMENU,
 };
 
 class EventChild: public Event {
@@ -77,6 +78,9 @@ inline Event* new_evtMUSIC(std::string msg = "") {
 }
 inline Event* new_evtMOVIE(std::string msg = "") {
     return new Event(evtMOVIE, "evtMOVIE", msg);
+}
+inline Event* new_evtMENU(std::string msg = "") {
+    return new Event(evtMENU, "evtMENU", msg);
 }
 
 #endif
