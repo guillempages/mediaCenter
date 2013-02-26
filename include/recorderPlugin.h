@@ -7,7 +7,7 @@ namespace Config {
 class RecordPluginConf;
 }
 
-class RecordPlugin : public Plugin {
+class RecordPlugin: public Plugin {
 
 public:
     RecordPlugin();

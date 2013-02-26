@@ -7,7 +7,7 @@ namespace Config {
 class MenuPluginConf;
 }
 
-class MenuPlugin : public Plugin {
+class MenuPlugin: public Plugin {
 
 public:
     MenuPlugin();

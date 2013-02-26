@@ -5,7 +5,6 @@
 #include <signal.h>
 #include "mediaCenter_output.h"
 
-
 class MediaCenter_xmms: public MediaCenter_output {
 public:
     MediaCenter_xmms();

@@ -7,7 +7,8 @@
 
 namespace Config {
 class PluginConf;
-};
+}
+;
 
 class Plugin {
 
@@ -18,7 +19,6 @@ public:
     virtual bool start(const Config::PluginConf& plugin);
     virtual bool stop();
 
-
     int getPID() const;
     void setPort(int port);
     int getPort() const;
@@ -28,10 +28,11 @@ public:
 protected:
     int PID_;
     int port_;
-    int exec(const std::string &prog,const char ** argv);
+    int exec(const std::string &prog, const char ** argv);
 };
 
-inline Plugin::Plugin() : PID_(-1),port_(0) {
+inline Plugin::Plugin() :
+        PID_(-1), port_(0) {
 }
 
 inline Plugin::~Plugin() {
@@ -47,7 +48,7 @@ inline bool Plugin::start(const Config::PluginConf&) {
 }
 
 inline void Plugin::setPort(int _port) {
-    port_=_port;
+    port_ = _port;
 }
 
 inline int Plugin::getPort() const {

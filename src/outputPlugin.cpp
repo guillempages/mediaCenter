@@ -12,7 +12,8 @@
 using Config::plugins;
 using std::string;
 
-OutputPlugin::OutputPlugin() : ::Plugin() {
+OutputPlugin::OutputPlugin() :
+        ::Plugin() {
     DBG(std::cout << "Constructing OutputPlugin" << std::endl;)
 }
 
@@ -24,38 +25,38 @@ bool OutputPlugin::start(const Config::OutputPluginConf & plugin) {
     if (PID_)
         stop();
 
-    port_=plugin.port;
+    port_ = plugin.port;
     char port[10];
     const char * argv[10];
-    sprintf(port,"%i",port_);
+    sprintf(port, "%i", port_);
 
-    string basename=plugin.path;
+    string basename = plugin.path;
 
-    int pos=basename.rfind("/");
+    int pos = basename.rfind("/");
     if (pos != string::npos) {
-        basename=basename.substr(pos+1);
+        basename = basename.substr(pos + 1);
     }
-    int i=0;
+    int i = 0;
 
-    argv[i++]=basename.c_str();
-    argv[i++]="-p";
-    argv[i++]=port;
-    argv[i++]="-t";
-    argv[i++]=plugin.type.c_str();
-    if (plugin.file!="") {
-        argv[i++]="-f";
-        argv[i++]=plugin.file.c_str();
+    argv[i++] = basename.c_str();
+    argv[i++] = "-p";
+    argv[i++] = port;
+    argv[i++] = "-t";
+    argv[i++] = plugin.type.c_str();
+    if (plugin.file != "") {
+        argv[i++] = "-f";
+        argv[i++] = plugin.file.c_str();
     }
-    if (plugin.configFile!="") {
-        argv[i++]="-c";
-        argv[i++]=plugin.configFile.c_str();
+    if (plugin.configFile != "") {
+        argv[i++] = "-c";
+        argv[i++] = plugin.configFile.c_str();
     }
-    argv[i++]=NULL;
+    argv[i++] = NULL;
 
     DBG(std::cout << "Starting " << plugin.path << std::endl;)
 
-            PID_=exec(plugin.path,argv);
-    if (PID_<=0) {
+    PID_ = exec(plugin.path, argv);
+    if (PID_ <= 0) {
         perror("OutputPlugin");
         return false;
     }

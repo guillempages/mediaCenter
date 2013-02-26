@@ -28,55 +28,56 @@ MediaCenter_output * newApp() {
 MediaCenter_xmms::MediaCenter_xmms() {
 }
 
-MediaCenter_xmms::~MediaCenter_xmms() {}
+MediaCenter_xmms::~MediaCenter_xmms() {
+}
 
 int MediaCenter_xmms::startApplication() {
 
-    const char * argv [4];
+    const char * argv[4];
 
-    argv[0]="mediaCenter-xmms";
-    argv[1]="-p";
-    if (filename_=="")
-        argv[2]=NULL;
+    argv[0] = "mediaCenter-xmms";
+    argv[1] = "-p";
+    if (filename_ == "")
+        argv[2] = NULL;
     else
-        argv[2]=filename_.c_str();
-    argv[3]=NULL;
+        argv[2] = filename_.c_str();
+    argv[3] = NULL;
 
-    pid_ = exec("xmms",argv);
+    pid_ = exec("xmms", argv);
 
     return pid_;
 }
 
 int MediaCenter_xmms::getTrack() {
-    int result=0;
+    int result = 0;
     if (xmms_remote_is_running(0)) {
-        result=xmms_remote_get_playlist_pos(0)+1;
+        result = xmms_remote_get_playlist_pos(0) + 1;
     }
     return result;
 }
 
 int MediaCenter_xmms::getTotalTracks() {
-    int result=0;
+    int result = 0;
     if (xmms_remote_is_running(0)) {
-        result=xmms_remote_get_playlist_length(0);
+        result = xmms_remote_get_playlist_length(0);
     }
     return result;
 }
 
 int MediaCenter_xmms::getTime() {
-    int result=0;
+    int result = 0;
     if (xmms_remote_is_running(0)) {
-        result=xmms_remote_get_output_time(0)/1000;
+        result = xmms_remote_get_output_time(0) / 1000;
     }
     return result;
 }
 
 int MediaCenter_xmms::getTotalTime() {
-    int result=0;
-    int pos=0;
+    int result = 0;
+    int pos = 0;
     if (xmms_remote_is_running(0)) {
-        pos=xmms_remote_get_playlist_pos(0);
-        result=xmms_remote_get_playlist_time(0,pos)/1000;
+        pos = xmms_remote_get_playlist_pos(0);
+        result = xmms_remote_get_playlist_time(0, pos) / 1000;
     }
     return result;
 }
@@ -87,28 +88,28 @@ string MediaCenter_xmms::getArtist() {
 }
 
 string MediaCenter_xmms::getTitle() {
-    int pos=0;
-    string result="";
+    int pos = 0;
+    string result = "";
     if (xmms_remote_is_running(0)) {
-        pos=xmms_remote_get_playlist_pos(0);
-        result=xmms_remote_get_playlist_title(0,pos);
+        pos = xmms_remote_get_playlist_pos(0);
+        result = xmms_remote_get_playlist_title(0, pos);
     }
     return result;
 }
 
 bool MediaCenter_xmms::isPaused() {
-    bool result=true;
+    bool result = true;
     if (xmms_remote_is_running(0)) {
-        result=xmms_remote_is_paused(0);
+        result = xmms_remote_is_paused(0);
     }
 
     return result;
 }
 
 bool MediaCenter_xmms::isShuffle() {
-    bool result=false;
+    bool result = false;
     if (xmms_remote_is_running(0)) {
-        result=xmms_remote_is_shuffle(0);
+        result = xmms_remote_is_shuffle(0);
     }
 
     return result;

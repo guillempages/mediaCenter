@@ -8,7 +8,8 @@ namespace Config {
 
 class PluginConf {
 public:
-    PluginConf(const std::string& type="", const std::string& path="", const std::string& configFile="");
+    PluginConf(const std::string& type = "", const std::string& path = "",
+            const std::string& configFile = "");
 
     std::string class_;
     std::string type;
@@ -18,43 +19,52 @@ public:
 
 };
 
-class RemotePluginConf : public PluginConf {
+class RemotePluginConf: public PluginConf {
 public:
-    RemotePluginConf(const std::string& type="remote", const std::string& path="mediaCenter_lirc", const std::string & name="", const std::string & server="localhost");
+    RemotePluginConf(const std::string& type = "remote", const std::string& path =
+            "mediaCenter_lirc", const std::string & name = "", const std::string & server =
+            "localhost");
     std::string name;
     std::string server;
 };
 
-class MonitorPluginConf : public PluginConf {
+class MonitorPluginConf: public PluginConf {
 public:
-    MonitorPluginConf(const std::string& type="monitor", const std::string& path="mediaCenter_cdMonitor",const std::string & device="", const std::string & mountPoint="", const std::string & server="localhost");
+    MonitorPluginConf(const std::string& type = "monitor", const std::string& path =
+            "mediaCenter_cdMonitor", const std::string & device = "",
+            const std::string & mountPoint = "", const std::string & server = "localhost");
     std::string device;
     std::string mountPoint;
     std::string server;
 };
 
-class OutputPluginConf : public PluginConf {
+class OutputPluginConf: public PluginConf {
 public:
-    OutputPluginConf(const std::string& type="output", const std::string& path="mediaCenter_output",const std::string & file="");
+    OutputPluginConf(const std::string& type = "output", const std::string& path =
+            "mediaCenter_output", const std::string & file = "");
     std::string file;
 };
 
-class DisplayPluginConf : public PluginConf {
+class DisplayPluginConf: public PluginConf {
 public:
-    DisplayPluginConf(const std::string& type="display", const std::string& path="mediaCenter_display", const std::string & server="localhost");
+    DisplayPluginConf(const std::string& type = "display", const std::string& path =
+            "mediaCenter_display", const std::string & server = "localhost");
     std::string server;
 };
 
-class MenuPluginConf : public OutputPluginConf {
+class MenuPluginConf: public OutputPluginConf {
 public:
-    MenuPluginConf(const std::string& type="menu", const std::string& path="mediaCenter_menu", const std::string & file="", const std::string & server="localhost", int remotePort=10010);
+    MenuPluginConf(const std::string& type = "menu", const std::string& path = "mediaCenter_menu",
+            const std::string & file = "", const std::string & server = "localhost",
+            int remotePort = 10010);
     std::string server;
     int remotePort;
 };
 
-class RecordPluginConf : public PluginConf {
+class RecordPluginConf: public PluginConf {
 public:
-    RecordPluginConf(const std::string& type="record", const std::string& path="mediaCenter_record", const std::string& file="", const std::string& format="mpg");
+    RecordPluginConf(const std::string& type = "record", const std::string& path =
+            "mediaCenter_record", const std::string& file = "", const std::string& format = "mpg");
     std::string file;
     std::string format;
 };
@@ -76,15 +86,16 @@ public:
     std::string path;
 };
 
-
 extern Plugins plugins;
-}; //namespace Config
+}
+;
+//namespace Config
 
 std::ostream & operator<<(std::ostream& ostr, const Config::PluginConf & plugin);
 std::ostream & operator<<(std::ostream& ostr, const Config::Plugins & plugins);
 
 Config::Plugins & getPlugins(const std::string & path = "");
 
-void configInit(const std::string & path="");
+void configInit(const std::string & path = "");
 
 #endif

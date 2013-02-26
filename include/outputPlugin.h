@@ -7,7 +7,7 @@ namespace Config {
 class OutputPluginConf;
 }
 
-class OutputPlugin : public Plugin {
+class OutputPlugin: public Plugin {
 
 public:
     OutputPlugin();

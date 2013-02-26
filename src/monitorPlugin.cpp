@@ -10,7 +10,8 @@
 using Config::plugins;
 using std::string;
 
-MonitorPlugin::MonitorPlugin() : ::Plugin() {
+MonitorPlugin::MonitorPlugin() :
+        ::Plugin() {
 }
 
 MonitorPlugin::~MonitorPlugin() {
@@ -21,32 +22,32 @@ bool MonitorPlugin::start(const Config::MonitorPluginConf& plugin) {
     if (PID_)
         stop();
 
-    port_=plugin.port;
+    port_ = plugin.port;
 
     char port[10];
     const char * argv[10];
-    sprintf(port,"%i",port_);
+    sprintf(port, "%i", port_);
 
-    std::string basename=plugin.path;
+    std::string basename = plugin.path;
 
-    int pos=basename.rfind("/");
-    if (pos!=string::npos) {
-        basename=basename.substr(pos+1);
+    int pos = basename.rfind("/");
+    if (pos != string::npos) {
+        basename = basename.substr(pos + 1);
     }
-    int i=0;
-    argv[i++]=basename.c_str();
-    argv[i++]="-d";
-    argv[i++]=plugin.device.c_str();
-    argv[i++]="-m";
-    argv[i++]=plugin.mountPoint.c_str();
-    argv[i++]="-s";
-    argv[i++]=plugin.server.c_str();
-    argv[i++]="-p";
-    argv[i++]=port;
-    argv[i++]=NULL;
+    int i = 0;
+    argv[i++] = basename.c_str();
+    argv[i++] = "-d";
+    argv[i++] = plugin.device.c_str();
+    argv[i++] = "-m";
+    argv[i++] = plugin.mountPoint.c_str();
+    argv[i++] = "-s";
+    argv[i++] = plugin.server.c_str();
+    argv[i++] = "-p";
+    argv[i++] = port;
+    argv[i++] = NULL;
 
-    PID_=exec(plugin.path,argv);
-    if (PID_<=0) {
+    PID_ = exec(plugin.path, argv);
+    if (PID_ <= 0) {
         perror("MonitorPlugin");
         return false;
     }

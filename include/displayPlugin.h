@@ -7,7 +7,7 @@ namespace Config {
 class DisplayPluginConf;
 }
 
-class DisplayPlugin : public Plugin {
+class DisplayPlugin: public Plugin {
 
 public:
     DisplayPlugin();

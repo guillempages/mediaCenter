@@ -7,7 +7,7 @@ namespace Config {
 class RemotePluginConf;
 }
 
-class RemotePlugin : public Plugin {
+class RemotePlugin: public Plugin {
 
 public:
     RemotePlugin();

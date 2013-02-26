@@ -7,7 +7,7 @@ namespace Config {
 class MonitorPluginConf;
 }
 
-class MonitorPlugin : public Plugin {
+class MonitorPlugin: public Plugin {
 
 public:
     MonitorPlugin();
