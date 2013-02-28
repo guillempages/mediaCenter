@@ -36,18 +36,25 @@ using std::stringstream;
 void * font;
 
 int width, height;
-int pos=0;
+int pos = 0;
 bool windowed = false;
 vector<string> menu,menuFiles;
 
-int sock=-1;
+int sock = -1;
+int orgCursor = -1;
 struct sockaddr_in remote;
-string dir=".";
+string dir = ".";
 
 void finish() {
-    if (sock>=0)
+    if (sock>=0) {
         close(sock);
-    sock=-1;
+        sock = -1;
+    }
+
+    if (orgCursor>=0) {
+        glutSetCursor(orgCursor);
+        orgCursor = -1;
+    }
 }
 
 RETSIGTYPE term(int result=0) {
@@ -338,6 +345,8 @@ int initGlutWindow(int argc, char* argv[]) {
         glutFullScreen();
     }
 
+    orgCursor = glutGet(GLUT_WINDOW_CURSOR);
+    glutSetCursor(GLUT_CURSOR_NONE);
     glutReshapeFunc(my_reshape);
     glutKeyboardFunc(my_handle_key);
     glutDisplayFunc(&displayFunction);
