@@ -838,22 +838,22 @@ int main(int argc, char* argv[]) {
     int optc = 0;
     while ((optc = getopt(argc, argv, "vp:c:")) != -1) {
         switch (optc) {
-        case 'v': { // version
+        case 'v': // version
             cout << PACKAGE_NAME << " version " << VERSION << endl;
-            cout << "Copyright (c) Guillem Pages Gassull 2009." << endl;
+            cout << "Copyright (c) Guillem Pages Gassull 2009-2013." << endl;
             exit(0);
             break;
-        }
-        case 'p': { // port
+
+        case 'p': // port
             port = atoi(optarg);
             cout << "Using non default port " << port << endl;
             break;
-        }
-        case 'c': { // config file
+
+        case 'c': // config file
             configPath = optarg;
             cout << "Reading configuration from " << configPath << endl;
             break;
-        }
+
         default:
             //      usage(basename);
             exit(-1);
