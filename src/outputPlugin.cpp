@@ -66,5 +66,5 @@ bool OutputPlugin::start(const Config::OutputPluginConf & plugin) {
 
 bool OutputPlugin::stop() {
     DBG(std::cout << "Stopping OutputPlugin" << std::endl);
-    send("Quit");
+    return (send("Quit") > 0);
 }

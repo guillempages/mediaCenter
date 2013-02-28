@@ -241,7 +241,8 @@ void my_idle() {
     if (error > 0) {
         char buf[513];
 
-        if (error = myRecv(sock, buf, 512, 1, &from)) {
+        error = myRecv(sock, buf, 512, 1, &from);
+        if (error > 0) {
             buf[error] = 0;
             if ((buf[error - 1] == '\n') || (buf[error - 1] == '\r'))
                 buf[error - 1] = 0;
@@ -317,6 +318,8 @@ vector<string> listDirectory(const string& directory) {
     }
     std::sort(menuFiles.begin(), menuFiles.end());
     std::sort(result.begin(), result.end());
+
+    return result;
 }
 
 int initGlutWindow(int argc, char* argv[]) {
@@ -351,6 +354,8 @@ int initGlutWindow(int argc, char* argv[]) {
     atexit(finish);
 
     glutMainLoop();
+
+    return 0;
 }
 
 void usage(string progName) {
@@ -435,13 +440,14 @@ int main(int argc, char * argv[]) {
     remote.sin_family = AF_INET;
     remote.sin_port = htons(remotePort);
 
-    if (phe = gethostbyname(server.c_str()))
+    phe = gethostbyname(server.c_str());
+    if (phe) {
         memcpy((char*) &remote.sin_addr, phe->h_addr, phe->h_length);
-    else if ((remote.sin_addr.s_addr = inet_addr(server.c_str())) == INADDR_NONE) {
+    } else if ((remote.sin_addr.s_addr = inet_addr(server.c_str())) == INADDR_NONE) {
         perror(basename);
         term(-2);
     }
 
-    initGlutWindow(argc, argv);
+    return initGlutWindow(argc, argv);
 
 }

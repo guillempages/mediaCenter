@@ -193,7 +193,8 @@ int main(int argc, char * argv[]) {
     local.sin_addr.s_addr = INADDR_ANY;
     local.sin_port = 0;
 
-    if (phe = gethostbyname(server.c_str()))
+    phe = gethostbyname(server.c_str());
+    if (phe)
         memcpy((char*) &remote.sin_addr, phe->h_addr, phe->h_length);
     else if ((remote.sin_addr.s_addr = inet_addr(server.c_str())) == INADDR_NONE) {
         perror(basename);

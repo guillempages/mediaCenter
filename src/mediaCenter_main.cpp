@@ -77,24 +77,24 @@ inline void resetSound() {
 void HSM_Quit::processEvent(const Event* event) {
     MyHSM * myHsm = (MyHSM*) this->hsm;
     switch (event->type) {
-    case evtENTER: {
+    case evtENTER:
         myHsm->inputPlugin.stop();
         myHsm->displayPlugin.stop();
         kill(0, SIGTERM); /* kill all child processes */
         delete myHsm;
         ::hsm = NULL; /* Ugly hack */
         break;
-    }
-    case evtERROR: {
+
+    case evtERROR:
         if (event->msg != "") {
             cerr << event->msg << endl;
         }
         break;
-    }
-    default: {
+
+    default:
         DBG(cout << "Nothing to do" << endl);
         break;
-    }
+
     }
 }
 
@@ -105,45 +105,49 @@ void HSM_Quit::processEvent(const Event* event) {
  *********/
 void HSM_Start::processEvent(const Event* event) {
     MyHSM * myHsm = (MyHSM*) this->hsm;
+    HSM_State * nextState;
+    Event_Next* nextEvent;
+
     switch (event->type) {
-    case evtENTER: {
+    case evtENTER:
         myHsm->inputPlugin.start(Config::plugins.remote);
         myHsm->displayPlugin.start(Config::plugins.display);
         break;
-    }
-    case evtQUIT: {
+
+    case evtQUIT:
         if (event->msg != "") {
             cerr << event->msg << endl;
         }
-        HSM_Quit *stQuit = new HSM_Quit(this->hsm);
-        this->hsm->changeState(stQuit);
+        nextState = new HSM_Quit(this->hsm);
+        this->hsm->changeState(nextState);
         break;
-    }
-    case evtERROR: {
+
+    case evtERROR:
         if (event->msg != "") {
             cerr << event->msg << endl;
         }
         break;
-    }
-    case evtNEXT: {
-        Event_Next* myEvt = (Event_Next*) event;
+
+    case evtNEXT:
+        nextEvent = (Event_Next*) event;
         /* Start can only go to IDLE, so ignore nextState */
-        if (myEvt->nextState) {
-            delete myEvt->nextState;
+        if (nextEvent->nextState) {
+            delete nextEvent->nextState;
         }
-        /* fall-through */
-    }
-    case evtIDLE: {
-        HSM_Idle *stIdle = new HSM_Idle(this->hsm);
-        this->hsm->changeState(stIdle);
+        /* no break */
+
+    case evtIDLE:
+        nextState = new HSM_Idle(this->hsm);
+        this->hsm->changeState(nextState);
         break;
-    }
-    case evtEXIT: {
+
+    case evtEXIT:
         break;
-    }
-    default: {
+
+    default:
         DBG(cout << "Nothing to do" << endl);
-    }
+        break;
+
     }
 }
 
@@ -154,12 +158,15 @@ void HSM_Start::processEvent(const Event* event) {
  *************/
 void HSM_WaitChild::processEvent(const Event* event) {
     MyHSM * myHsm = (MyHSM*) this->hsm;
+    EventChild *myEvent;
+    HSM_State *nextState;
+
     switch (event->type) {
-    case evtENTER: {
+    case evtENTER:
         break;
-    }
-    case evtCHILD: {
-        EventChild* myEvent = (EventChild*) event;
+
+    case evtCHILD:
+        myEvent = (EventChild*) event;
 
         if (myEvent->pid == myHsm->inputPlugin.getPID()) {
             DBG(cout << "WARNING: Input plugin died. Restarting it" << endl);
@@ -169,35 +176,34 @@ void HSM_WaitChild::processEvent(const Event* event) {
             myHsm->displayPlugin.start(Config::plugins.display);
         } else if (myEvent->pid == pid) {
             DBG(cout << "Plugin (finally) died." << endl);
-            HSM_Idle *stIdle = new HSM_Idle(myHsm);
+            nextState = new HSM_Idle(myHsm);
             Event * exitEvt = this->exitEvt;
-            myHsm->changeState(stIdle);
+            myHsm->changeState(nextState);
             myHsm->receiveEvent(exitEvt);
         }
         break;
-    }
-    case evtQUIT: {
-        HSM_Quit *stQuit = new HSM_Quit(this->hsm);
-        this->hsm->changeState(stQuit);
+
+    case evtQUIT:
+        nextState = new HSM_Quit(this->hsm);
+        this->hsm->changeState(nextState);
         break;
-    }
-    case evtIDLE: {
+
+    case evtIDLE:
         /* Delete the next event (i.e. go to IDLE and stay there) */
         /* and send the pid as if the child stopped normally) */
         delete exitEvt;
         exitEvt = NULL;
         myHsm->receiveEvent(new_evtCHILD(pid));
         break;
-    }
 
-    case evtTIMER: {
+    case evtTIMER:
         timerCount++;
         if (timerCount == 10) { //10 ticks; with a 5Hz default = 2 seconds. Should be enough
             kill(pid, SIGKILL); // Kill with -9, just in case
             break;
         }
         if (timerCount >= 15) { // 5 ticks after "kill -9". If nothing received,
-            //somethin is very wrong
+            //something is very wrong
             cerr << "ERROR: Child process (" << pid << ") did not die within the allowed time."
                     << endl;
             /* Delete the next event (i.e. go to IDLE and stay there) */
@@ -207,19 +213,19 @@ void HSM_WaitChild::processEvent(const Event* event) {
             myHsm->receiveEvent(new_evtCHILD(pid));
         }
         break;
-    }
-    case evtERROR: {
+
+    case evtERROR:
         if (event->msg != "") {
             cerr << event->msg << endl;
         }
         break;
-    }
-    case evtEXIT: {
+
+    case evtEXIT:
         break;
-    }
-    default: {
+
+    default:
         DBG(cout << "Nothing to do" << endl);
-    }
+        break;
     }
 }
 
@@ -230,13 +236,17 @@ void HSM_WaitChild::processEvent(const Event* event) {
  *******/
 void HSM_Idle::processEvent(const Event* event) {
     MyHSM * myHsm = (MyHSM*) this->hsm;
+    EventChild* myEvent;
+    HSM_State *nextState;
+    Event_Next *nextEvent;
+
     switch (event->type) {
-    case evtENTER: {
+    case evtENTER:
         resetSound();
         break;
-    }
-    case evtCHILD: {
-        EventChild* myEvent = (EventChild*) event;
+
+    case evtCHILD:
+        myEvent = (EventChild*) event;
 
         if (myEvent->pid == myHsm->inputPlugin.getPID()) {
             DBG(cout << "WARNING: Input plugin died. Restarting it" << endl);
@@ -246,74 +256,73 @@ void HSM_Idle::processEvent(const Event* event) {
             myHsm->displayPlugin.start(Config::plugins.display);
         }
         break;
-    }
-    case evtQUIT: {
-        HSM_Quit *stQuit = new HSM_Quit(this->hsm);
-        this->hsm->changeState(stQuit);
+
+    case evtQUIT:
+        nextState = new HSM_Quit(this->hsm);
+        this->hsm->changeState(nextState);
         break;
-    }
-    case evtMENU: {
-        HSM_State *nextState = new HSM_Menu(myHsm);
+
+    case evtMENU:
+        nextState = new HSM_Menu(myHsm);
         myHsm->changeState(nextState);
         myHsm->receiveEvent(new_evtSTART(event->msg));
         break;
-    }
-    case evtMUSIC: {
-        HSM_State *nextState = new HSM_Music(myHsm);
+
+    case evtMUSIC:
+        nextState = new HSM_Music(myHsm);
+        myHsm->changeState(nextState);
+        myHsm->receiveEvent(new_evtSTART(event->msg));
+        Config::plugins.display.port = Config::plugins.dvd.port;
+        myHsm->displayPlugin.stop(); /* will be restarted with a sigCHLD */
+        break;
+
+    case evtMOVIE:
+        nextState = new HSM_Movie(myHsm);
         myHsm->changeState(nextState);
         myHsm->receiveEvent(new_evtSTART(event->msg));
         Config::plugins.display.port = Config::plugins.dvd.port;
         myHsm->displayPlugin.stop(); /* will be restarted with a sigCHLD */
 
         break;
-    }
-    case evtMOVIE: {
-        HSM_State *nextState = new HSM_Movie(myHsm);
+
+    case evtDVD:
+        nextState = new HSM_DVD(myHsm);
         myHsm->changeState(nextState);
         myHsm->receiveEvent(new_evtSTART(event->msg));
         Config::plugins.display.port = Config::plugins.dvd.port;
         myHsm->displayPlugin.stop(); /* will be restarted with a sigCHLD */
 
         break;
-    }
-    case evtDVD: {
-        HSM_State *nextState = new HSM_DVD(myHsm);
-        myHsm->changeState(nextState);
-        myHsm->receiveEvent(new_evtSTART(event->msg));
-        Config::plugins.display.port = Config::plugins.dvd.port;
-        myHsm->displayPlugin.stop(); /* will be restarted with a sigCHLD */
 
-        break;
-    }
-    case evtCD: {
-        HSM_State *nextState = new HSM_CD(myHsm);
+    case evtCD:
+        nextState = new HSM_CD(myHsm);
         myHsm->changeState(nextState);
         myHsm->receiveEvent(new_evtSTART(event->msg));
         Config::plugins.display.port = Config::plugins.cd.port;
         myHsm->displayPlugin.stop(); /* will be restarted with a sigCHLD */
 
         break;
-    }
-    case evtTIMER: {
+
+    case evtTIMER:
         break;
-    }
-    case evtNEXT: {
-        Event_Next* myEvt = (Event_Next*) event;
-        this->hsm->changeState(myEvt->nextState);
+
+    case evtNEXT:
+        nextEvent = (Event_Next*) event;
+        this->hsm->changeState(nextEvent->nextState);
         break;
-    }
-    case evtERROR: {
+
+    case evtERROR:
         if (event->msg != "") {
             cerr << event->msg << endl;
         }
         break;
-    }
-    case evtEXIT: {
+
+    case evtEXIT:
         break;
-    }
-    default: {
+
+    default:
         DBG(cout << "Nothing to do" << endl);
-    }
+        break;
     }
 }
 
@@ -324,11 +333,15 @@ void HSM_Idle::processEvent(const Event* event) {
  *********/
 void HSM_Menu::processEvent(const Event* event) {
     MyHSM * myHsm = (MyHSM*) this->hsm;
+    EventChild* myEvent;
+    HSM_State *nextState;
+    Event_Next * nextEvent;
+
     switch (event->type) {
-    case evtENTER: {
+    case evtENTER:
         break;
-    }
-    case evtSTART: {
+
+    case evtSTART:
         type = toLower(event->msg);
         plugin = new MenuPlugin();
         if (type == "movie") {
@@ -338,14 +351,14 @@ void HSM_Menu::processEvent(const Event* event) {
             myHsm->receiveEvent(myEvent);
         }
         break;
-    }
-    case evtQUIT: {
-        HSM_Quit *stQuit = new HSM_Quit(this->hsm);
-        this->hsm->changeState(stQuit);
+
+    case evtQUIT:
+        nextState = new HSM_Quit(this->hsm);
+        this->hsm->changeState(nextState);
         break;
-    }
-    case evtCHILD: {
-        EventChild* myEvent = (EventChild*) event;
+
+    case evtCHILD:
+        myEvent = (EventChild*) event;
 
         if (myEvent->pid == myHsm->inputPlugin.getPID()) {
             DBG(cout << "WARNING: Input plugin died. Restarting it" << endl);
@@ -360,49 +373,52 @@ void HSM_Menu::processEvent(const Event* event) {
             DBG(cerr << "ERROR: Unexpected process died: " << myEvent->pid << endl);
         }
         break;
-    }
-    case evtTIMER: {
+
+    case evtTIMER:
         break;
-    }
-    case evtSTOP: {
-        HSM_Idle *stIdle = new HSM_Idle(this->hsm);
-        this->hsm->changeState(stIdle);
+
+    case evtSTOP:
+        nextState = new HSM_Idle(this->hsm);
+        this->hsm->changeState(nextState);
 
         break;
-    }
+
     case evtIDLE:
     case evtMOVIE:
     case evtDVD:
     case evtCD:
     case evtTV:
-    case evtDVB: {
+    case evtDVB:
         /* Wait for the child to die ... */
         /* ... and resend the event */
-        HSM_WaitChild *stWait = new HSM_WaitChild(this->hsm, event->clone(), plugin->getPID());
-        myHsm->changeState(stWait);
+        nextState = new HSM_WaitChild(this->hsm, event->clone(), plugin->getPID());
+        myHsm->changeState(nextState);
         break;
-    }
-    case evtMSG: {
+
+    case evtMSG:
         if (plugin) {
             plugin->send(event->msg);
         }
         break;
-    }
-    case evtNEXT: {
-        Event_Next* myEvt = (Event_Next*) event;
-        this->hsm->changeState(myEvt->nextState);
-    }
-    case evtERROR: {
+
+    case evtNEXT:
+        nextEvent = (Event_Next*) event;
+        this->hsm->changeState(nextEvent->nextState);
+        break;
+
+    case evtERROR:
         if (event->msg != "") {
             cerr << event->msg << endl;
         }
-    }
-    case evtEXIT: {
         break;
-    }
-    default: {
+
+    case evtEXIT:
+        break;
+
+    default:
         DBG(cout << "Nothing to do" << endl);
-    }
+        break;
+
     }
 }
 
@@ -413,22 +429,26 @@ void HSM_Menu::processEvent(const Event* event) {
  *********/
 void HSM_Music::processEvent(const Event* event) {
     MyHSM * myHsm = (MyHSM*) this->hsm;
+    EventChild* myEvent;
+    HSM_State *nextState;
+    Event_Next * nextEvent;
+
     switch (event->type) {
-    case evtENTER: {
+    case evtENTER:
         break;
-    }
-    case evtSTART: {
+
+    case evtSTART:
         plugin = new OutputPlugin();
         ((OutputPlugin*) plugin)->start(Config::plugins.music);
         break;
-    }
-    case evtQUIT: {
-        HSM_Quit *stQuit = new HSM_Quit(this->hsm);
-        this->hsm->changeState(stQuit);
+
+    case evtQUIT:
+        nextState = new HSM_Quit(this->hsm);
+        this->hsm->changeState(nextState);
         break;
-    }
-    case evtCHILD: {
-        EventChild* myEvent = (EventChild*) event;
+
+    case evtCHILD:
+        myEvent = (EventChild*) event;
 
         if (myEvent->pid == myHsm->inputPlugin.getPID()) {
             DBG(cout << "WARNING: Input plugin died. Restarting it" << endl);
@@ -441,50 +461,52 @@ void HSM_Music::processEvent(const Event* event) {
             myHsm->receiveEvent(new_evtSTOP());
         }
         break;
-    }
-    case evtTIMER: {
+
+    case evtTIMER:
         break;
-    }
-    case evtSTOP: {
-        HSM_Idle *stIdle = new HSM_Idle(this->hsm);
-        this->hsm->changeState(stIdle);
+
+    case evtSTOP:
+        nextState = new HSM_Idle(this->hsm);
+        this->hsm->changeState(nextState);
 
         break;
-    }
+
     case evtIDLE:
     case evtMOVIE:
     case evtMENU:
     case evtDVD:
     case evtCD:
     case evtTV:
-    case evtDVB: {
+    case evtDVB:
         /* Wait for the child to die ... */
         /* ... and resend the event */
-        HSM_WaitChild *stWait = new HSM_WaitChild(this->hsm, event->clone(), plugin->getPID());
-        myHsm->changeState(stWait);
+        nextState = new HSM_WaitChild(this->hsm, event->clone(), plugin->getPID());
+        myHsm->changeState(nextState);
         break;
-    }
-    case evtMSG: {
+
+    case evtMSG:
         if (plugin) {
             plugin->send(event->msg);
         }
         break;
-    }
-    case evtNEXT: {
-        Event_Next* myEvt = (Event_Next*) event;
-        this->hsm->changeState(myEvt->nextState);
-    }
-    case evtERROR: {
+
+    case evtNEXT:
+        nextEvent = (Event_Next*) event;
+        this->hsm->changeState(nextEvent->nextState);
+        break;
+
+    case evtERROR:
         if (event->msg != "") {
             cerr << event->msg << endl;
         }
-    }
-    case evtEXIT: {
         break;
-    }
-    default: {
+
+    case evtEXIT:
+        break;
+
+    default:
         DBG(cout << "Nothing to do" << endl);
-    }
+        break;
     }
 }
 
@@ -495,22 +517,26 @@ void HSM_Music::processEvent(const Event* event) {
  *********/
 void HSM_DVD::processEvent(const Event* event) {
     MyHSM * myHsm = (MyHSM*) this->hsm;
+    EventChild* myEvent;
+    HSM_State *nextState;
+    Event_Next * nextEvent;
+
     switch (event->type) {
-    case evtENTER: {
+    case evtENTER:
         break;
-    }
-    case evtSTART: {
+
+    case evtSTART:
         plugin = new OutputPlugin();
         ((OutputPlugin*) plugin)->start(Config::plugins.dvd);
         break;
-    }
-    case evtQUIT: {
-        HSM_Quit *stQuit = new HSM_Quit(this->hsm);
-        this->hsm->changeState(stQuit);
+
+    case evtQUIT:
+        nextState = new HSM_Quit(this->hsm);
+        this->hsm->changeState(nextState);
         break;
-    }
-    case evtCHILD: {
-        EventChild* myEvent = (EventChild*) event;
+
+    case evtCHILD:
+        myEvent = (EventChild*) event;
 
         if (myEvent->pid == myHsm->inputPlugin.getPID()) {
             DBG(cout << "WARNING: Input plugin died. Restarting it" << endl);
@@ -523,50 +549,52 @@ void HSM_DVD::processEvent(const Event* event) {
             myHsm->receiveEvent(new_evtSTOP());
         }
         break;
-    }
-    case evtSTOP: {
-        HSM_Idle *stIdle = new HSM_Idle(this->hsm);
-        this->hsm->changeState(stIdle);
+
+    case evtSTOP:
+        nextState = new HSM_Idle(this->hsm);
+        this->hsm->changeState(nextState);
 
         break;
-    }
+
     case evtIDLE:
     case evtMENU:
     case evtMOVIE:
     case evtMUSIC:
     case evtCD:
     case evtTV:
-    case evtDVB: {
+    case evtDVB:
         /* Wait for the child to die ... */
         /* ... and resend the event */
-        HSM_WaitChild *stWait = new HSM_WaitChild(this->hsm, event->clone(), plugin->getPID());
-        myHsm->changeState(stWait);
+        nextState = new HSM_WaitChild(this->hsm, event->clone(), plugin->getPID());
+        myHsm->changeState(nextState);
         break;
-    }
-    case evtMSG: {
+
+    case evtMSG:
         if (plugin) {
             plugin->send(event->msg);
         }
         break;
-    }
-    case evtTIMER: {
+
+    case evtTIMER:
         break;
-    }
-    case evtNEXT: {
-        Event_Next* myEvt = (Event_Next*) event;
-        this->hsm->changeState(myEvt->nextState);
-    }
-    case evtERROR: {
+
+    case evtNEXT:
+        nextEvent = (Event_Next*) event;
+        this->hsm->changeState(nextEvent->nextState);
+        break;
+
+    case evtERROR:
         if (event->msg != "") {
             cerr << event->msg << endl;
         }
-    }
-    case evtEXIT: {
         break;
-    }
-    default: {
+
+    case evtEXIT:
+        break;
+
+    default:
         DBG(cout << "Nothing to do" << endl);
-    }
+        break;
     }
 }
 
@@ -577,22 +605,26 @@ void HSM_DVD::processEvent(const Event* event) {
  *********/
 void HSM_CD::processEvent(const Event* event) {
     MyHSM * myHsm = (MyHSM*) this->hsm;
+    EventChild* myEvent;
+    HSM_State *nextState;
+    Event_Next * nextEvent;
+
     switch (event->type) {
-    case evtENTER: {
+    case evtENTER:
         break;
-    }
-    case evtSTART: {
+
+    case evtSTART:
         plugin = new OutputPlugin();
         ((OutputPlugin*) plugin)->start(Config::plugins.cd);
         break;
-    }
-    case evtQUIT: {
-        HSM_Quit *stQuit = new HSM_Quit(this->hsm);
-        this->hsm->changeState(stQuit);
+
+    case evtQUIT:
+        nextState = new HSM_Quit(this->hsm);
+        this->hsm->changeState(nextState);
         break;
-    }
-    case evtCHILD: {
-        EventChild* myEvent = (EventChild*) event;
+
+    case evtCHILD:
+        myEvent = (EventChild*) event;
 
         if (myEvent->pid == myHsm->inputPlugin.getPID()) {
             DBG(cout << "WARNING: Input plugin died. Restarting it" << endl);
@@ -605,50 +637,51 @@ void HSM_CD::processEvent(const Event* event) {
             myHsm->receiveEvent(new_evtSTOP());
         }
         break;
-    }
-    case evtSTOP: {
-        HSM_Idle *stIdle = new HSM_Idle(this->hsm);
-        this->hsm->changeState(stIdle);
 
+    case evtSTOP:
+        nextState = new HSM_Idle(this->hsm);
+        this->hsm->changeState(nextState);
         break;
-    }
+
     case evtIDLE:
     case evtMENU:
     case evtMOVIE:
     case evtMUSIC:
     case evtCD:
     case evtTV:
-    case evtDVB: {
+    case evtDVB:
         /* Wait for the child to die ... */
         /* ... and resend the event */
-        HSM_WaitChild *stWait = new HSM_WaitChild(this->hsm, event->clone(), plugin->getPID());
-        myHsm->changeState(stWait);
+        nextState = new HSM_WaitChild(this->hsm, event->clone(), plugin->getPID());
+        myHsm->changeState(nextState);
         break;
-    }
-    case evtMSG: {
+
+    case evtMSG:
         if (plugin) {
             plugin->send(event->msg);
         }
         break;
-    }
-    case evtTIMER: {
+
+    case evtTIMER:
         break;
-    }
-    case evtNEXT: {
-        Event_Next* myEvt = (Event_Next*) event;
-        this->hsm->changeState(myEvt->nextState);
-    }
-    case evtERROR: {
+
+    case evtNEXT:
+        nextEvent = (Event_Next*) event;
+        this->hsm->changeState(nextEvent->nextState);
+        break;
+
+    case evtERROR:
         if (event->msg != "") {
             cerr << event->msg << endl;
         }
-    }
-    case evtEXIT: {
         break;
-    }
-    default: {
+
+    case evtEXIT:
+        break;
+
+    default:
         DBG(cout << "Nothing to do" << endl);
-    }
+        break;
     }
 }
 
@@ -659,11 +692,15 @@ void HSM_CD::processEvent(const Event* event) {
  *********/
 void HSM_Movie::processEvent(const Event* event) {
     MyHSM * myHsm = (MyHSM*) this->hsm;
+    EventChild* myEvent;
+    HSM_State *nextState;
+    Event_Next * nextEvent;
+
     switch (event->type) {
-    case evtENTER: {
+    case evtENTER:
         break;
-    }
-    case evtSTART: {
+
+    case evtSTART:
         if (event->msg == "") {
             //        plugin=new MenuPlugin();
             //        ((MenuPlugin*)plugin)->start(Config::plugins.movieMenu);
@@ -676,14 +713,14 @@ void HSM_Movie::processEvent(const Event* event) {
             ((OutputPlugin*) plugin)->start(Config::plugins.movie);
         }
         break;
-    }
-    case evtQUIT: {
-        HSM_Quit *stQuit = new HSM_Quit(this->hsm);
-        this->hsm->changeState(stQuit);
+
+    case evtQUIT:
+        nextState = new HSM_Quit(this->hsm);
+        this->hsm->changeState(nextState);
         break;
-    }
-    case evtCHILD: {
-        EventChild* myEvent = (EventChild*) event;
+
+    case evtCHILD:
+        myEvent = (EventChild*) event;
 
         if (myEvent->pid == myHsm->inputPlugin.getPID()) {
             DBG(cout << "WARNING: Input plugin died. Restarting it" << endl);
@@ -696,13 +733,13 @@ void HSM_Movie::processEvent(const Event* event) {
             myHsm->receiveEvent(new_evtSTOP());
         }
         break;
-    }
-    case evtSTOP: {
-        HSM_Idle *stIdle = new HSM_Idle(this->hsm);
-        this->hsm->changeState(stIdle);
+
+    case evtSTOP:
+        nextState = new HSM_Idle(this->hsm);
+        this->hsm->changeState(nextState);
 
         break;
-    }
+
     case evtIDLE:
     case evtMENU:
     case evtMUSIC:
@@ -710,37 +747,40 @@ void HSM_Movie::processEvent(const Event* event) {
     case evtDVD:
     case evtCD:
     case evtTV:
-    case evtDVB: {
+    case evtDVB:
         /* Wait for the child to die ... */
         /* ... and resend the event */
-        HSM_WaitChild *stWait = new HSM_WaitChild(this->hsm, event->clone(), plugin->getPID());
-        myHsm->changeState(stWait);
+        nextState = new HSM_WaitChild(this->hsm, event->clone(), plugin->getPID());
+        myHsm->changeState(nextState);
         break;
-    }
-    case evtMSG: {
+
+    case evtMSG:
         if (plugin) {
             plugin->send(event->msg);
         }
         break;
-    }
-    case evtTIMER: {
+
+    case evtTIMER:
         break;
-    }
-    case evtNEXT: {
-        Event_Next* myEvt = (Event_Next*) event;
-        myHsm->changeState(myEvt->nextState);
-    }
-    case evtERROR: {
+
+    case evtNEXT:
+        nextEvent = (Event_Next*) event;
+        myHsm->changeState(nextEvent->nextState);
+        break;
+
+    case evtERROR:
         if (event->msg != "") {
             cerr << event->msg << endl;
         }
-    }
-    case evtEXIT: {
         break;
-    }
-    default: {
+
+    case evtEXIT:
+        break;
+
+    default:
         DBG(cout << "Nothing to do" << endl);
-    }
+        break;
+
     }
 }
 

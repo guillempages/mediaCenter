@@ -50,9 +50,10 @@ int MplayerRemote::initSocket(const string& _address, int port) {
     pAddress->sin_family = AF_INET;
     pAddress->sin_port = htons(port);
 
-    if (phe = gethostbyname(_address.c_str()))
+    phe = gethostbyname(_address.c_str());
+    if (phe) {
         memcpy((char *) &pAddress->sin_addr, phe->h_addr, phe->h_length);
-    else if ((pAddress->sin_addr.s_addr = inet_addr(_address.c_str())) == INADDR_NONE) {
+    } else if ((pAddress->sin_addr.s_addr = inet_addr(_address.c_str())) == INADDR_NONE) {
         perror("MplayerRemote. Could not resolve address");
         close(socket_);
         socket_ = -1;
@@ -75,6 +76,7 @@ int MplayerRemote::initSocket(const string& _address, int port) {
         socket_ = -1;
         return socket_;
     }
+    return socket_;
 }
 
 MplayerRemote::~MplayerRemote() {
@@ -100,6 +102,8 @@ bool MplayerRemote::doVoidCommand(const string& command, string arg1, string arg
     }
     line += "\n";
     send(socket_, line.c_str(), line.length(), 0);
+
+    return true;
 }
 
 std::string MplayerRemote::doStringCommand(const string& command, string arg1, string arg2,

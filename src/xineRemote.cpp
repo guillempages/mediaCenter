@@ -49,10 +49,10 @@ int XineRemote::initSocket(const string& _address, int port) {
 
     pAddress->sin_family = AF_INET;
     pAddress->sin_port = htons(port);
-
-    if (phe = gethostbyname(_address.c_str()))
+    phe = gethostbyname(_address.c_str());
+    if (phe) {
         memcpy((char *) &pAddress->sin_addr, phe->h_addr, phe->h_length);
-    else if ((pAddress->sin_addr.s_addr = inet_addr(_address.c_str())) == INADDR_NONE) {
+    } else if ((pAddress->sin_addr.s_addr = inet_addr(_address.c_str())) == INADDR_NONE) {
         perror("XineRemote. Could not resolve address");
         close(socket_);
         socket_ = -1;
@@ -77,6 +77,7 @@ int XineRemote::initSocket(const string& _address, int port) {
     } else {
         DBG("XineRemote ready to work");
     }
+    return socket_;
 }
 
 XineRemote::~XineRemote() {
