@@ -199,7 +199,9 @@ void HSM_WaitChild::processEvent(const Event* event) {
     case evtTIMER:
         timerCount++;
         if (timerCount == 10) { //10 ticks; with a 5Hz default = 2 seconds. Should be enough
-            kill(pid, SIGKILL); // Kill with -9, just in case
+            if (pid > 0) {
+                kill(pid, SIGKILL); // Kill with -9, just in case
+            }
             break;
         }
         if (timerCount >= 15) { // 5 ticks after "kill -9". If nothing received,
