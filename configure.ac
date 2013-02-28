@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(mediaCenter, 0.4.1, guillempages@hotmail.com)
-AM_INIT_AUTOMAKE(mediaCenter, 0.4.1)
+AC_INIT(mediaCenter, 0.4.2, guillempages@hotmail.com)
+AM_INIT_AUTOMAKE(mediaCenter, 0.4.2)
 
 AM_CONFIG_HEADER(include/defines.h)
 AC_LANG_CPLUSPLUS
