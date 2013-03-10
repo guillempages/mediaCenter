@@ -80,6 +80,7 @@ void HSM_Quit::processEvent(const Event* event) {
     case evtENTER:
         myHsm->inputPlugin.stop();
         myHsm->displayPlugin.stop();
+        DBG(cout << "Killing all  processes" << endl);
         kill(0, SIGTERM); /* kill all child processes */
         delete myHsm;
         ::hsm = NULL; /* Ugly hack */
