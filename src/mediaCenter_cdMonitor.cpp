@@ -3,6 +3,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
+
 #include <string.h> // for memcpy
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,7 +13,9 @@
 #include <sys/types.h>
 #include <sys/signal.h>
 #include <sys/wait.h>
+#include <sys/mount.h>
 #include <fcntl.h>
+#include <dirent.h>
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -24,6 +28,7 @@ using std::cerr;
 using std::endl;
 using std::flush;
 using std::string;
+using std::vector;
 
 #ifdef DEBUG
 #define DBG(x) x
@@ -35,6 +40,7 @@ using std::string;
 bool end;
 int sock = -1;
 int cdDrive = -1;
+string mounted = "";
 
 //Clear dead children
 RETSIGTYPE clavaEstaca(int = 0) {
@@ -59,8 +65,64 @@ RETSIGTYPE term(int result = 0) {
         close(cdDrive);
     }
 
+    if (mounted != "") {
+        int error=umount(mounted.c_str());
+        if (error != 0) {
+            perror("umount");
+        }
+        mounted = "";
+    }
+
     //quit program
     exit(result);
+}
+
+
+inline std::vector<File> getDirectoryContents(std::string directoryName) {
+    std::vector<File> result;
+
+    DIR * directory = opendir(directoryName.c_str());
+
+    struct dirent *entry;
+
+    if (directory == NULL) {
+        perror("opendir failed");
+        return result;
+    }
+
+    entry = readdir(directory);
+    while (entry != NULL) {
+        result.push_back(entry->d_name);
+        entry = readdir(directory);
+    };
+
+    closedir(directory);
+
+    return result;
+}
+
+string getDiskType(const string& mountPoint) {
+    vector<File> dirContents = getDirectoryContents(mountPoint);
+    string result = "";
+    bool audio_ts = false;
+    bool video_ts = false;
+
+    for (vector<File>::iterator i=dirContents.begin(); i!=dirContents.end(); i++) {
+        if (*i == "." || *i == "..") {
+            /* void */
+        } else if (*i == "AUDIO_TS") {
+            audio_ts = true;
+        } else if (*i == "VIDEO_TS") {
+            video_ts = true;
+        } else {
+            /* void */
+        }
+    }
+
+    if (audio_ts && video_ts) {
+        result = "DVD";
+    }
+    return result;
 }
 
 void usage(string progName) {
@@ -113,7 +175,7 @@ int main(int argc, char * argv[]) {
         }
     }
 
-    DBG(cout << "Server: " << server << endl); DBG(cout << "Port: " << port << endl);
+    DBG(cout << "Server: " << server << endl);DBG(cout << "Port: " << port << endl);
 
     DBG(cout << "Listening for events for " << programName << endl);
 
@@ -154,18 +216,23 @@ int main(int argc, char * argv[]) {
         end = true;
     }
 
-    bool mounted = false;
     while (!end) {
         int len = read(cdDrive, buffer, 512);
         if (len > 0) {
             lseek(cdDrive, 0, SEEK_SET);
-            if (!mounted) {
-                mounted = true;
-                sendto(sock, &address, "DVD");
+            if (mounted == "") {
+                if (mount(deviceName.c_str(), mountPoint.c_str(), "udf", MS_RDONLY, NULL) < 0) {
+                    perror(("Mount " + deviceName).c_str());
+                } else {
+                    mounted = mountPoint;
+                    string diskType = getDiskType(mountPoint);
+                    cout << "Found disk: " << diskType << endl;
+                    sendto(sock, &address, diskType);
+                }
             }
         } else {
-            if (mounted) {
-                mounted = false;
+            if (mounted != "") {
+                mounted = "";
                 sendto(sock, &address, "Void");
             }
         }

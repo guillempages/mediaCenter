@@ -34,3 +34,8 @@ mediaCenter_cdMonitor_SOURCES=mediaCenter_cdMonitor.cpp
 
 mediaCenter_imon_SOURCES=mediaCenter_imon.cpp
 mediaCenter_imon_LDADD=-llcd
+
+install-exec-hook:
+	chown root $(bindir)/mediaCenter_cdMonitor
+	chmod u+s  $(bindir)/mediaCenter_cdMonitor
+
