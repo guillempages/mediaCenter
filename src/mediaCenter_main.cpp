@@ -26,6 +26,7 @@
 #include "outputPlugin.h"
 #include "menuPlugin.h"
 #include "recorderPlugin.h"
+#include "monitorPlugin.h"
 
 #include "config.h"
 
@@ -41,7 +42,7 @@ class MyHSM: public HSM {
 public:
     DisplayPlugin displayPlugin;
     RemotePlugin inputPlugin;
-
+    MonitorPlugin monitorPlugin;
 };
 
 static MyHSM* hsm = NULL;
@@ -80,6 +81,7 @@ void HSM_Quit::processEvent(const Event* event) {
     case evtENTER:
         myHsm->inputPlugin.stop();
         myHsm->displayPlugin.stop();
+        myHsm->monitorPlugin.stop();
         DBG(cout << "Killing all  processes" << endl);
         kill(0, SIGTERM); /* kill all child processes */
         delete myHsm;
@@ -113,6 +115,7 @@ void HSM_Start::processEvent(const Event* event) {
     case evtENTER:
         myHsm->inputPlugin.start(Config::plugins.remote);
         myHsm->displayPlugin.start(Config::plugins.display);
+        myHsm->monitorPlugin.start(Config::plugins.monitor);
         break;
 
     case evtQUIT:
@@ -175,6 +178,9 @@ void HSM_WaitChild::processEvent(const Event* event) {
         } else if (myEvent->pid == myHsm->displayPlugin.getPID()) {
             DBG(cout << "WARNING: Display plugin died. Restarting it" << endl);
             myHsm->displayPlugin.start(Config::plugins.display);
+        } else if (myEvent->pid == myHsm->monitorPlugin.getPID()) {
+            DBG(cout << "WARNING: Monitor plugin died. Restarting it" << endl);
+            myHsm->monitorPlugin.start(Config::plugins.monitor);
         } else if (myEvent->pid == pid) {
             DBG(cout << "Plugin (finally) died." << endl);
             nextState = new HSM_Idle(myHsm);
@@ -257,6 +263,9 @@ void HSM_Idle::processEvent(const Event* event) {
         } else if (myEvent->pid == myHsm->displayPlugin.getPID()) {
             DBG(cout << "WARNING: Display plugin died. Restarting it" << endl);
             myHsm->displayPlugin.start(Config::plugins.display);
+        } else if (myEvent->pid == myHsm->monitorPlugin.getPID()) {
+            DBG(cout << "WARNING: Monitor plugin died. Restarting it" << endl);
+            myHsm->monitorPlugin.start(Config::plugins.monitor);
         }
         break;
 
@@ -369,6 +378,9 @@ void HSM_Menu::processEvent(const Event* event) {
         } else if (myEvent->pid == myHsm->displayPlugin.getPID()) {
             DBG(cout << "WARNING: Display plugin died. Restarting it" << endl);
             myHsm->displayPlugin.start(Config::plugins.display);
+        } else if (myEvent->pid == myHsm->monitorPlugin.getPID()) {
+            DBG(cout << "WARNING: Monitor plugin died. Restarting it" << endl);
+            myHsm->monitorPlugin.start(Config::plugins.monitor);
         } else if (myEvent->pid == plugin->getPID()) {
             DBG(cout << "WARNING: Output plugin died." << endl);
             myHsm->receiveEvent(new_evtSTOP());
@@ -459,6 +471,9 @@ void HSM_Music::processEvent(const Event* event) {
         } else if (myEvent->pid == myHsm->displayPlugin.getPID()) {
             DBG(cout << "WARNING: Display plugin died. Restarting it" << endl);
             myHsm->displayPlugin.start(Config::plugins.display);
+        } else if (myEvent->pid == myHsm->monitorPlugin.getPID()) {
+            DBG(cout << "WARNING: Monitor plugin died. Restarting it" << endl);
+            myHsm->monitorPlugin.start(Config::plugins.monitor);
         } else if (myEvent->pid == plugin->getPID()) {
             DBG(cout << "WARNING: Output plugin died." << endl);
             myHsm->receiveEvent(new_evtSTOP());
@@ -547,6 +562,9 @@ void HSM_DVD::processEvent(const Event* event) {
         } else if (myEvent->pid == myHsm->displayPlugin.getPID()) {
             DBG(cout << "WARNING: Display plugin died. Restarting it" << endl);
             myHsm->displayPlugin.start(Config::plugins.display);
+        } else if (myEvent->pid == myHsm->monitorPlugin.getPID()) {
+            DBG(cout << "WARNING: Monitor plugin died. Restarting it" << endl);
+            myHsm->monitorPlugin.start(Config::plugins.monitor);
         } else if (myEvent->pid == plugin->getPID()) {
             DBG(cout << "WARNING: Output plugin died." << endl);
             myHsm->receiveEvent(new_evtSTOP());
@@ -635,6 +653,9 @@ void HSM_CD::processEvent(const Event* event) {
         } else if (myEvent->pid == myHsm->displayPlugin.getPID()) {
             DBG(cout << "WARNING: Display plugin died. Restarting it" << endl);
             myHsm->displayPlugin.start(Config::plugins.display);
+        } else if (myEvent->pid == myHsm->monitorPlugin.getPID()) {
+            DBG(cout << "WARNING: Monitor plugin died. Restarting it" << endl);
+            myHsm->monitorPlugin.start(Config::plugins.monitor);
         } else if (myEvent->pid == plugin->getPID()) {
             DBG(cout << "WARNING: Output plugin died." << endl);
             myHsm->receiveEvent(new_evtSTOP());
@@ -731,6 +752,9 @@ void HSM_Movie::processEvent(const Event* event) {
         } else if (myEvent->pid == myHsm->displayPlugin.getPID()) {
             DBG(cout << "WARNING: Display plugin died. Restarting it" << endl);
             myHsm->displayPlugin.start(Config::plugins.display);
+        } else if (myEvent->pid == myHsm->monitorPlugin.getPID()) {
+            DBG(cout << "WARNING: Monitor plugin died. Restarting it" << endl);
+            myHsm->monitorPlugin.start(Config::plugins.monitor);
         } else if (myEvent->pid == plugin->getPID()) {
             DBG(cout << "WARNING: Output plugin died." << endl);
             myHsm->receiveEvent(new_evtSTOP());
@@ -866,6 +890,7 @@ int main(int argc, char* argv[]) {
     configInit(configPath);
     Config::plugins.movieMenu.remotePort = port;
     Config::plugins.remote.port = port;
+    Config::plugins.monitor.port = port;
 
     DBG(cout << Config::plugins << endl);
 
