@@ -17,7 +17,7 @@ mediaCenter.conf: Makefile
 	
 	echo "[Monitor]" >> $@;
 	echo "path = $(bindir)/mediaCenter_cdMonitor" >> $@;
-	echo "file = /dev/dvd" >> $@;
+	echo "device = /dev/dvd" >> $@;
 	echo "mountPoint = /media/cdrom" >> $@;
 	echo "#server = localhost" >> $@;
 	echo "" >>$@;
