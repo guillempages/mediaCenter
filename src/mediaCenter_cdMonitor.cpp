@@ -21,6 +21,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
+#include "fileutils.h"
 #include "utils.h"
 
 using std::cout;

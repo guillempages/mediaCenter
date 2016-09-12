@@ -75,7 +75,8 @@ am_mediaCenter_OBJECTS = mediaCenter_main.$(OBJEXT) hsm.$(OBJEXT) \
 	recorderPlugin.$(OBJEXT)
 mediaCenter_OBJECTS = $(am_mediaCenter_OBJECTS)
 mediaCenter_LDADD = $(LDADD)
-am_mediaCenter_cdMonitor_OBJECTS = mediaCenter_cdMonitor.$(OBJEXT)
+am_mediaCenter_cdMonitor_OBJECTS = mediaCenter_cdMonitor.$(OBJEXT) \
+	fileutils.$(OBJEXT)
 mediaCenter_cdMonitor_OBJECTS = $(am_mediaCenter_cdMonitor_OBJECTS)
 mediaCenter_cdMonitor_LDADD = $(LDADD)
 am_mediaCenter_dummy_OBJECTS = mediaCenter_dummy.$(OBJEXT)
@@ -261,7 +262,7 @@ mediaCenter_xine_SOURCES = mediaCenter_xine.cpp mediaCenter_output.cpp tvcontrol
 #mediaCenter_xine_CPPFLAGS= $(AM_CPPFLAGS) -DPLUGIN=MediaCenter_xine
 mediaCenter_mplayer_SOURCES = mediaCenter_mplayer.cpp mediaCenter_output.cpp tvcontrol.cpp mplayerRemote.cpp
 #mediaCenter_mplayer_CPPFLAGS= $(AM_CPPFLAGS) -DPLUGIN=MediaCenter_mplayer
-mediaCenter_cdMonitor_SOURCES = mediaCenter_cdMonitor.cpp
+mediaCenter_cdMonitor_SOURCES = mediaCenter_cdMonitor.cpp fileutils.cpp
 mediaCenter_imon_SOURCES = mediaCenter_imon.cpp
 mediaCenter_imon_LDADD = -llcd
 all: all-am
@@ -378,6 +379,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/basePlugin.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/config.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/displayPlugin.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fileutils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hsm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mediaCenter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mediaCenter_cdMonitor.Po@am__quote@

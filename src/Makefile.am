@@ -30,7 +30,7 @@ mediaCenter_xine_SOURCES=mediaCenter_xine.cpp mediaCenter_output.cpp tvcontrol.c
 mediaCenter_mplayer_SOURCES=mediaCenter_mplayer.cpp mediaCenter_output.cpp tvcontrol.cpp mplayerRemote.cpp
 #mediaCenter_mplayer_CPPFLAGS= $(AM_CPPFLAGS) -DPLUGIN=MediaCenter_mplayer
 
-mediaCenter_cdMonitor_SOURCES=mediaCenter_cdMonitor.cpp
+mediaCenter_cdMonitor_SOURCES=mediaCenter_cdMonitor.cpp fileutils.cpp
 
 mediaCenter_imon_SOURCES=mediaCenter_imon.cpp
 mediaCenter_imon_LDADD=-llcd

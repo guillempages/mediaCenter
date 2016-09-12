@@ -16,46 +16,7 @@
 #define DBG(x)
 #endif
 
-class File {
-private:
-    std::string path;
-    std::string extension;
-    std::string baseName;
 
-    void init(const std::string& filename);
-
-public:
-    File(const char* filename);
-    File(const std::string& filename);
-
-    /**
-     * Get the path where the file is, without the file name.
-     */
-    std::string getPath() const;
-    /**
-     * Get the extension of the file (or empty if the file has no extension).
-     */
-    std::string getExtension() const;
-    /**
-     * Get the filename without any preceding path.
-     */
-    std::string getBaseName() const;
-    /**
-     * Get the complete filename including all path parts.
-     */
-    std::string getFullName() const;
-
-    /**
-     * Get the filename without path or extension.
-     */
-    std::string getStrippedName() const;
-
-    operator const char*() const;
-
-    bool operator ==(const File& rvalue) const;
-    bool operator ==(const std::string& rvalue) const;
-    bool operator ==(const char* rvalue) const;
-};
 
 inline std::string intToString(int value) {
     std::stringstream sstream;
@@ -137,89 +98,6 @@ inline int myRecv(int sock, char * buffer, int buflen, int _timeout = 1, struct 
         //    DBG(std::cout << "Received " << error << " Bytes: ->" << buffer << "<-" << std::endl;)
     }
     return error;
-}
-
-inline void File::init(const std::string& filename) {
-    int posPath, posExtension;
-    posPath = filename.rfind('/');
-    posExtension = filename.rfind('.');
-
-    if (posPath == std::string::npos) {
-        path = "";
-        posPath = 0;
-    } else {
-        ++posPath;
-        path = filename.substr(0, posPath);
-    }
-    if (posExtension == std::string::npos) {
-        extension = "";
-    } else {
-        extension = filename.substr(posExtension);
-    }
-
-    baseName = filename.substr(posPath, posExtension - posPath);
-}
-
-inline File::File(const char* filename) {
-    init((std::string) filename);
-}
-
-inline File::File(const std::string& filename) {
-    init(filename);
-}
-/**
- * Get the path where the file is, without the file name.
- */
-inline std::string File::getPath() const {
-    if (path.length() > 0) {
-        return path.substr(0,path.length()-1);
-    } else {
-        return path;
-    }
-}
-/**
- * Get the extension of the file (or empty if the file has no extension).
- */
-inline std::string File::getExtension() const {
-    if (extension.length() > 0) {
-        return extension.substr(1);
-    } else {
-        return extension;
-    }
-}
-/**
- * Get the filename without any preceding path.
- */
-inline std::string File::getBaseName() const {
-    return baseName + extension;
-}
-/**
- * Get the complete filename including all path parts.
- */
-inline std::string File::getFullName() const {
-    return path + baseName + extension;
-}
-/**
- * Get the filename without path or extension.
- */
-inline std::string File::getStrippedName() const {
-    return baseName;
-}
-
-inline File::operator const char*() const {
-    return getFullName().c_str();
-}
-
-inline bool File::operator ==(const File& rvalue) const {
-    return getFullName() == rvalue.getFullName();
-}
-
-inline bool File::operator ==(const std::string& rvalue) const {
-    return getFullName() == rvalue;
-}
-
-inline bool File::operator ==(const char* rvalue) const {
-    return getFullName() == rvalue;
 }
 
 #endif
